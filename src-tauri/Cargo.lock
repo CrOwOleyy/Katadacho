@@ -1942,6 +1942,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "katadacho"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-autostart",
+ "tauri-plugin-global-shortcut",
+ "tauri-plugin-opener",
+ "tauri-plugin-single-instance",
+]
+
+[[package]]
 name = "keyboard-types"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1960,20 +1974,6 @@ checksum = "0fbe853b403ae61a04233030ae8a79d94975281ed9770a1f9e246732b534b28d"
 dependencies = [
  "bitflags 2.13.2",
  "serde",
-]
-
-[[package]]
-name = "kscaffold"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-autostart",
- "tauri-plugin-global-shortcut",
- "tauri-plugin-opener",
- "tauri-plugin-single-instance",
 ]
 
 [[package]]
