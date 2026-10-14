@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
+import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ControlsTab } from "../features/controls/ControlsTab";
 import { Soul } from "../components/soul/Soul";
@@ -8,6 +9,7 @@ import { springSpring } from "../lib/motion";
 const IDLE = { width: 180, height: 36 };
 const EXPANDED = { width: 640, height: 360 };
 const CLOCK_TICK_MS = 30_000;
+const AUTO_COLLAPSE_MS = 15_000;
 
 function useClock() {
   const [now, setNow] = useState(() => new Date());
@@ -24,6 +26,23 @@ export function IslandApp() {
   const time = useClock();
 
   useClickThroughBounds(pillRef);
+
+  // Le menu se referme seul après 15 s, puis le minuteur repart à la prochaine ouverture.
+  useEffect(() => {
+    if (!expanded) return;
+    const timeout = window.setTimeout(() => setExpanded(false), AUTO_COLLAPSE_MS);
+    return () => window.clearTimeout(timeout);
+  }, [expanded]);
+
+  // Échap ferme le menu, pour le fermer sans attendre le minuteur.
+  useEffect(() => {
+    if (!expanded) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setExpanded(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded]);
 
   const size = expanded ? EXPANDED : IDLE;
 
@@ -49,9 +68,19 @@ export function IslandApp() {
               transition={{ duration: 0.15 }}
               className="flex h-full flex-col gap-3 overflow-y-auto p-4 [scrollbar-width:none]"
             >
-              <div className="flex items-center gap-2">
-                <Soul size={20} />
-                <span className="text-sm font-medium">Controls</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Soul size={20} />
+                  <span className="text-sm font-medium">Controls</span>
+                </div>
+                <button
+                  type="button"
+                  aria-label="Fermer le menu"
+                  onClick={() => setExpanded(false)}
+                  className="rounded-lg p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <X size={16} />
+                </button>
               </div>
               <ControlsTab />
             </motion.div>
