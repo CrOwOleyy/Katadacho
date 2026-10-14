@@ -1,3 +1,4 @@
+mod controls;
 mod window;
 
 use tauri::Manager;
@@ -21,7 +22,11 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            click_through::update_island_bounds
+            click_through::update_island_bounds,
+            controls::get_audio_state,
+            controls::set_master_volume,
+            controls::toggle_mute,
+            controls::set_default_audio_device,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
