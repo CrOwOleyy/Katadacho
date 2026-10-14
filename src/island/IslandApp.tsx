@@ -6,10 +6,11 @@ import { Soul } from "../components/soul/Soul";
 import { useClickThroughBounds } from "../hooks/useClickThrough";
 import { springSpring } from "../lib/motion";
 
+const HIDDEN = { width: 240, height: 6 };
 const IDLE = { width: 180, height: 36 };
 const EXPANDED = { width: 640, height: 360 };
 const CLOCK_TICK_MS = 30_000;
-const AUTO_COLLAPSE_MS = 15_000;
+const VISIBLE_MS = 15_000;
 
 function useClock() {
   const [now, setNow] = useState(() => new Date());
@@ -21,20 +22,24 @@ function useClock() {
 }
 
 export function IslandApp() {
+  const [visible, setVisible] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const pillRef = useRef<HTMLDivElement>(null);
   const time = useClock();
 
   useClickThroughBounds(pillRef);
 
-  // Le menu se referme seul après 15 s, puis le minuteur repart à la prochaine ouverture.
+  // L'Island disparaît 15 s après son affichage, qu'elle soit ouverte ou non.
   useEffect(() => {
-    if (!expanded) return;
-    const timeout = window.setTimeout(() => setExpanded(false), AUTO_COLLAPSE_MS);
+    if (!visible) return;
+    const timeout = window.setTimeout(() => {
+      setVisible(false);
+      setExpanded(false);
+    }, VISIBLE_MS);
     return () => window.clearTimeout(timeout);
-  }, [expanded]);
+  }, [visible]);
 
-  // Échap ferme le menu, pour le fermer sans attendre le minuteur.
+  // Échap ferme le menu déployé sans cacher l'Island.
   useEffect(() => {
     if (!expanded) return;
     const onKey = (event: KeyboardEvent) => {
@@ -44,13 +49,19 @@ export function IslandApp() {
     return () => window.removeEventListener("keydown", onKey);
   }, [expanded]);
 
-  const size = expanded ? EXPANDED : IDLE;
+  // Survoler la barre cachée en haut fait réapparaître l'Island, déployée.
+  const reveal = () => {
+    setVisible(true);
+    setExpanded(true);
+  };
+
+  const size = !visible ? HIDDEN : expanded ? EXPANDED : IDLE;
 
   return (
     <div className="flex h-full w-full justify-center">
       <motion.div
         ref={pillRef}
-        onMouseEnter={() => setExpanded(true)}
+        onMouseEnter={reveal}
         onMouseLeave={() => setExpanded(false)}
         animate={{ width: size.width, height: size.height }}
         transition={springSpring}
@@ -59,7 +70,7 @@ export function IslandApp() {
         }`}
       >
         <AnimatePresence mode="wait" initial={false}>
-          {expanded ? (
+          {visible && expanded && (
             <motion.div
               key="expanded"
               initial={{ opacity: 0 }}
@@ -84,7 +95,8 @@ export function IslandApp() {
               </div>
               <ControlsTab />
             </motion.div>
-          ) : (
+          )}
+          {visible && !expanded && (
             <motion.div
               key="idle"
               initial={{ opacity: 0 }}
