@@ -1,4 +1,5 @@
 pub mod audio;
+pub mod brightness;
 pub mod policy_config;
 
 use audio::{AudioState, ComGuard};
@@ -48,4 +49,14 @@ pub async fn set_default_audio_device(device_id: String) -> Result<(), String> {
         policy_config::set_default_endpoint(&device_id).map_err(|e| e.to_string())
     })
     .await
+}
+
+#[tauri::command]
+pub async fn get_brightness() -> Result<u8, String> {
+    blocking(brightness::get_brightness).await
+}
+
+#[tauri::command]
+pub async fn set_brightness(level: u8) -> Result<(), String> {
+    blocking(move || brightness::set_brightness(level)).await
 }

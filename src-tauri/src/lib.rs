@@ -27,6 +27,8 @@ pub fn run() {
             controls::set_master_volume,
             controls::toggle_mute,
             controls::set_default_audio_device,
+            controls::get_brightness,
+            controls::set_brightness,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
