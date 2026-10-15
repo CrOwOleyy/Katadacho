@@ -38,7 +38,12 @@ export function useSystemStats() {
         disk: append(prev.disk, next.disk.totalGb > 0 ? (next.disk.usedGb / next.disk.totalGb) * 100 : 0),
       }));
     }).then((fn) => {
-      unlisten = fn;
+      // Si le composant est déjà démonté, on désinscrit tout de suite.
+      if (active) {
+        unlisten = fn;
+      } else {
+        fn();
+      }
     });
 
     ipc.startSystemStats().catch((error: unknown) => console.error("start_system_stats failed", error));
