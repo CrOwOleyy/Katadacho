@@ -3,6 +3,7 @@ import { BentoCard } from "../../components/ui/BentoCard";
 import { Toggle } from "../../components/ui/Toggle";
 import { useSettings } from "../../store/SettingsContext";
 import { BlockedApps } from "./BlockedApps";
+import { NotificationAccess } from "./NotificationAccess";
 import { SettingRow } from "./SettingRow";
 import { SettingSlider } from "./SettingSlider";
 
@@ -142,6 +143,7 @@ export function SettingsTab() {
           </BentoCard>
 
           <BentoCard title="Notifications Windows" icon={<Bell size={14} />}>
+            <NotificationAccess />
             <SettingRow label="Afficher dans l'Island">
               <Toggle
                 label="Afficher les notifications dans l'Island"
