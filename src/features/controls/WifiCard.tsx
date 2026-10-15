@@ -12,7 +12,7 @@ export function WifiCard({ state, onToggle }: WifiCardProps) {
   const connected = state.wifiSsid !== null;
 
   return (
-    <BentoCard title="Wi-Fi" icon={<Wifi size={14} />}>
+    <BentoCard title="Wi-Fi" icon={<Wifi size={14} />} className="col-span-2">
       <div className="flex items-center justify-between">
         <span className="truncate text-sm font-medium">
           {connected ? state.wifiSsid : state.wifiEnabled === false ? "Désactivé" : "Non connecté"}
