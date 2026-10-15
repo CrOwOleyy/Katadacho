@@ -70,6 +70,7 @@ pub fn run() {
             media::levels::stop_audio_levels,
             settings::get_settings,
             settings::save_settings,
+            settings::reset_settings,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
