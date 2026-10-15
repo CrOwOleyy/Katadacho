@@ -1,0 +1,36 @@
+export interface AnimationSettings {
+  enabled: boolean;
+  speed: number;
+  openDelayMs: number;
+  closeDelayMs: number;
+  tabTransitionMs: number;
+}
+
+export interface IslandSettings {
+  autoHideSeconds: number;
+  showMediaInPill: boolean;
+}
+
+export interface TimerSettings {
+  focusMinutes: number;
+  shortBreakMinutes: number;
+  longBreakMinutes: number;
+  sessionsBeforeLongBreak: number;
+  autoStartNext: boolean;
+  soundEnabled: boolean;
+}
+
+export interface NotificationSettings {
+  enabled: boolean;
+  displaySeconds: number;
+  showBody: boolean;
+  soundEnabled: boolean;
+  blockedApps: string[];
+}
+
+export interface Settings {
+  animations: AnimationSettings;
+  island: IslandSettings;
+  timer: TimerSettings;
+  notifications: NotificationSettings;
+}
