@@ -12,6 +12,7 @@ import { TimerChip } from "../features/timer/TimerChip";
 import { TimerTab } from "../features/timer/TimerTab";
 import { useNotifications } from "../hooks/useNotifications";
 import { useTimer } from "../hooks/useTimer";
+import type { GhostMood } from "../components/mascot/mood";
 import { Soul } from "../components/soul/Soul";
 import { MediaPill } from "../features/media/MediaPill";
 import { useMedia } from "../hooks/useMedia";
@@ -78,6 +79,20 @@ export function IslandApp() {
   const media = showMediaInPill ? mediaInfo : null;
   const { snapshot: timer, finished } = useTimer();
   const { current: toast, pending, dismissCurrent } = useNotifications();
+
+  // Humeur de la mascotte, par ordre de priorité : ce qui vient d'arriver passe avant le fond sonore.
+  const breakPhase = timer.phase === "shortBreak" || timer.phase === "longBreak";
+  const mood: GhostMood = toast
+    ? "alert"
+    : finished
+      ? "happy"
+      : timer.status === "running" && timer.phase === "focus"
+        ? "focus"
+        : timer.status === "running" && breakPhase
+          ? "sleepy"
+          : media?.playing
+            ? "music"
+            : "idle";
   const timerVisible = timer.status !== "idle";
 
   useClickThroughBounds(pillRef);
@@ -202,7 +217,7 @@ export function IslandApp() {
             >
               <header className="flex shrink-0 items-center justify-between px-4 pb-2 pt-4">
                 <div className="flex items-center gap-2">
-                  <Soul size={22} />
+                  <Soul size={28} mood={mood} />
                   <nav className="ml-1 flex items-center gap-0.5" aria-label="Sections">
                     {TABS.map((item) => {
                       const Icon = item.icon;
@@ -293,6 +308,7 @@ export function IslandApp() {
               <MediaPill
                 media={media}
                 time={time}
+                mood={mood}
                 timerChip={timerVisible ? <TimerChip snapshot={timer} flashing={finished !== null} /> : null}
               />
             </motion.div>
