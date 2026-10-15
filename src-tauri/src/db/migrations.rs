@@ -16,6 +16,10 @@ const MIGRATIONS: &[&str] = &[
     );
     CREATE INDEX idx_clipboard_created ON clipboard_items (created_at DESC);
     CREATE INDEX idx_clipboard_hash ON clipboard_items (content_hash);",
+    "CREATE TABLE settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+    );",
 ];
 
 pub fn run(connection: &Connection) -> rusqlite::Result<()> {
