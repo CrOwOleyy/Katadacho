@@ -87,7 +87,7 @@ export function MediaCard() {
 
   if (!media) {
     return (
-      <BentoCard title="Média" icon={<Music size={14} />} className="col-span-6">
+      <BentoCard title="Média" icon={<Music size={14} />} className="col-span-4">
         <p className="text-sm text-white/45">Aucun média en cours de lecture</p>
       </BentoCard>
     );
@@ -98,7 +98,7 @@ export function MediaCard() {
   const playing = position?.playing ?? media.playing;
 
   return (
-    <BentoCard title="Média" icon={<Music size={14} />} className="col-span-6">
+    <BentoCard title="Média" icon={<Music size={14} />} className="col-span-4">
       <div className="flex items-center gap-4">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/10">
           {media.coverBase64 ? (
@@ -136,36 +136,36 @@ export function MediaCard() {
             </div>
             <span className="w-9 font-mono text-[10px] text-white/50">{duration ? formatTime(duration) : "--:--"}</span>
           </div>
-        </div>
 
-        <div className="flex shrink-0 items-center gap-1">
-          <button
-            type="button"
-            aria-label="Piste précédente"
-            onClick={() => void run(ipc.mediaPrevious)}
-            className="rounded-full p-2 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            <SkipBack size={16} />
-          </button>
-          <button
-            type="button"
-            aria-label={playing ? "Pause" : "Lecture"}
-            onClick={() => void run(ipc.mediaTogglePlayPause)}
-            className="rounded-full bg-white p-2.5 text-black transition-transform hover:scale-105"
-          >
-            {playing ? <Pause size={16} className="fill-current" /> : <Play size={16} className="fill-current" />}
-          </button>
-          <button
-            type="button"
-            aria-label="Piste suivante"
-            onClick={() => void run(ipc.mediaNext)}
-            className="rounded-full p-2 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            <SkipForward size={16} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              aria-label="Piste précédente"
+              onClick={() => void run(ipc.mediaPrevious)}
+              className="rounded-full p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <SkipBack size={14} />
+            </button>
+            <button
+              type="button"
+              aria-label={playing ? "Pause" : "Lecture"}
+              onClick={() => void run(ipc.mediaTogglePlayPause)}
+              className="rounded-full bg-white p-2 text-black transition-transform hover:scale-105"
+            >
+              {playing ? <Pause size={14} className="fill-current" /> : <Play size={14} className="fill-current" />}
+            </button>
+            <button
+              type="button"
+              aria-label="Piste suivante"
+              onClick={() => void run(ipc.mediaNext)}
+              className="rounded-full p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <SkipForward size={14} />
+            </button>
+          </div>
         </div>
       </div>
-      {error && <p className="truncate text-[10px] text-red-400">{error}</p>}
+      {error &&<p className="truncate text-[10px] text-red-400">{error}</p>}
     </BentoCard>
   );
 }
