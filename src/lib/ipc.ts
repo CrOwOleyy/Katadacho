@@ -3,6 +3,7 @@ import type { AudioState, IslandBounds, NetworkBluetoothState } from "./types/co
 import type { SpeedtestEvent } from "./types/speedtest";
 import type { ClipboardFilter, ClipboardItem } from "./types/clipboard";
 import type { LauncherResult } from "./types/launcher";
+import type { MediaInfo } from "./types/media";
 
 export const ipc = {
   updateIslandBounds: (bounds: IslandBounds) => invoke<void>("update_island_bounds", { bounds }),
@@ -36,6 +37,10 @@ export const ipc = {
   openItemLocation: (path: string) => invoke<void>("open_item_location", { path }),
   reindexLauncher: () => invoke<void>("reindex_launcher"),
   getLauncherIcon: (path: string) => invoke<string>("get_launcher_icon", { path }),
+
+  getMediaState: () => invoke<MediaInfo | null>("get_media_state"),
+  startAudioLevels: () => invoke<void>("start_audio_levels"),
+  stopAudioLevels: () => invoke<void>("stop_audio_levels"),
 
   runSpeedtest: (onEvent: (event: SpeedtestEvent) => void) => {
     const channel = new Channel<SpeedtestEvent>();
