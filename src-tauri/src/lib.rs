@@ -3,6 +3,7 @@ mod controls;
 mod db;
 mod launcher;
 mod media;
+mod notifications;
 mod settings;
 mod sound;
 mod state;
@@ -43,6 +44,7 @@ pub fn run() {
             launcher::hotkey::register(app.handle());
             media::start(app.handle().clone());
             timer::start(app.handle().clone());
+            notifications::start(app.handle().clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -87,6 +89,8 @@ pub fn run() {
             timer::timer_resume,
             timer::timer_reset,
             timer::timer_skip,
+            notifications::get_notification_access,
+            notifications::request_notification_access,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
