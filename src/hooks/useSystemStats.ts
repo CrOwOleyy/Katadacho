@@ -12,20 +12,21 @@ export interface StatsHistory {
   disk: number[];
 }
 
+const append = (values: number[], value: number) => [...values, value].slice(-HISTORY_LENGTH);
+
 /**
  * Démarre la collecte Rust tant que le composant est monté, puis la coupe.
  * Garde aussi 60 échantillons par métrique pour les sparklines.
+ * `error` contient le message si l'écoute ou le démarrage échoue.
  */
 export function useSystemStats() {
   const [stats, setStats] = useState<SystemStats | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<StatsHistory>({ cpu: [], memory: [], gpu: [], disk: [] });
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
     let active = true;
-
-    const append = (values: number[], value: number) =>
-      [...values, value].slice(-HISTORY_LENGTH);
 
     listen<SystemStats>("system-stats", (event) => {
       if (!active) return;
@@ -37,23 +38,29 @@ export function useSystemStats() {
         gpu: append(prev.gpu, next.gpu?.usage ?? 0),
         disk: append(prev.disk, next.disk.totalGb > 0 ? (next.disk.usedGb / next.disk.totalGb) * 100 : 0),
       }));
-    }).then((fn) => {
-      // Si le composant est déjà démonté, on désinscrit tout de suite.
-      if (active) {
-        unlisten = fn;
-      } else {
-        fn();
-      }
-    });
+    })
+      .then((fn) => {
+        // Si le composant est déjà démonté, on désinscrit tout de suite.
+        if (active) {
+          unlisten = fn;
+        } else {
+          fn();
+        }
+      })
+      .catch((reason: unknown) => {
+        if (active) setError(`Écoute des métriques impossible : ${String(reason)}`);
+      });
 
-    ipc.startSystemStats().catch((error: unknown) => console.error("start_system_stats failed", error));
+    ipc.startSystemStats().catch((reason: unknown) => {
+      if (active) setError(`Démarrage de la collecte impossible : ${String(reason)}`);
+    });
 
     return () => {
       active = false;
       unlisten?.();
-      ipc.stopSystemStats().catch((error: unknown) => console.error("stop_system_stats failed", error));
+      ipc.stopSystemStats().catch((reason: unknown) => console.error("stop_system_stats failed", reason));
     };
   }, []);
 
-  return { stats, history };
+  return { stats, history, error };
 }
