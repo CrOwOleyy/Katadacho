@@ -5,6 +5,7 @@ import type { ClipboardFilter, ClipboardItem } from "./types/clipboard";
 import type { LauncherResult } from "./types/launcher";
 import type { MediaInfo, MediaPosition } from "./types/media";
 import type { Settings } from "./types/settings";
+import type { TimerSnapshot } from "./types/timer";
 
 export const ipc = {
   updateIslandBounds: (bounds: IslandBounds) => invoke<void>("update_island_bounds", { bounds }),
@@ -47,6 +48,14 @@ export const ipc = {
   mediaPosition: () => invoke<MediaPosition | null>("media_position"),
   startAudioLevels: () => invoke<void>("start_audio_levels"),
   stopAudioLevels: () => invoke<void>("stop_audio_levels"),
+
+  timerGet: () => invoke<TimerSnapshot>("timer_get"),
+  timerStartPomodoro: () => invoke<TimerSnapshot>("timer_start_pomodoro"),
+  timerStartCountdown: (seconds: number) => invoke<TimerSnapshot>("timer_start_countdown", { seconds }),
+  timerPause: () => invoke<TimerSnapshot>("timer_pause"),
+  timerResume: () => invoke<TimerSnapshot>("timer_resume"),
+  timerReset: () => invoke<TimerSnapshot>("timer_reset"),
+  timerSkip: () => invoke<TimerSnapshot>("timer_skip"),
 
   getSettings: () => invoke<Settings>("get_settings"),
   saveSettings: (settings: Settings) => invoke<Settings>("save_settings", { settings }),
