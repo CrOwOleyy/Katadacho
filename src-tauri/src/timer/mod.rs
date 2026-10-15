@@ -5,8 +5,6 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use tauri::{AppHandle, Emitter, Manager, State};
-use windows::core::w;
-use windows::Win32::Media::Audio::{PlaySoundW, SND_ALIAS, SND_ASYNC};
 
 use crate::settings::{Settings, SettingsState, TimerSettings};
 use machine::{Durations, Finished, Machine, Snapshot, Status};
@@ -41,15 +39,9 @@ fn durations_from(timer: &TimerSettings) -> Durations {
     }
 }
 
-fn play_finish_sound() {
-    unsafe {
-        let _ = PlaySoundW(w!("SystemNotification"), None, SND_ALIAS | SND_ASYNC);
-    }
-}
-
 fn announce_finished(app: &AppHandle, finished: Finished, settings: &Settings) {
     if settings.timer.sound_enabled {
-        play_finish_sound();
+        crate::sound::play_notification();
     }
     let _ = app.emit(EVENT_TIMER_FINISHED, finished);
 }
