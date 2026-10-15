@@ -1,12 +1,15 @@
 import { listen } from "@tauri-apps/api/event";
 import { motion, AnimatePresence } from "motion/react";
-import { Activity, ClipboardList, Search, Settings as SettingsIcon, SlidersHorizontal, X } from "lucide-react";
+import { Activity, ClipboardList, Search, Settings as SettingsIcon, SlidersHorizontal, Timer as TimerIcon, X } from "lucide-react";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { ClipboardTab } from "../features/clipboard/ClipboardTab";
 import { ControlsTab } from "../features/controls/ControlsTab";
 import { DashboardTab } from "../features/dashboard/DashboardTab";
 import { LauncherTab } from "../features/launcher/LauncherTab";
 import { SettingsTab } from "../features/settings/SettingsTab";
+import { TimerChip } from "../features/timer/TimerChip";
+import { TimerTab } from "../features/timer/TimerTab";
+import { useTimer } from "../hooks/useTimer";
 import { Soul } from "../components/soul/Soul";
 import { MediaPill } from "../features/media/MediaPill";
 import { useMedia } from "../hooks/useMedia";
@@ -15,21 +18,24 @@ import { useMotionConfig } from "../hooks/useMotion";
 import { useSettings } from "../store/SettingsContext";
 
 const HIDDEN = { width: 200, height: 4 };
-const IDLE = { width: 180, height: 36 };
-/** Pilule élargie quand un média est en cours, pour loger la pochette et l'onde sonore. */
-const IDLE_WITH_MEDIA = { width: 270, height: 36 };
+const IDLE_HEIGHT = 36;
+/** Largeur de la pilule repliée : base, plus la place du média et du minuteur quand ils sont affichés. */
+const IDLE_BASE_WIDTH = 180;
+const IDLE_MEDIA_EXTRA = 90;
+const IDLE_TIMER_EXTRA = 74;
 const EXPANDED = { width: 760, height: 480 };
 const CLOCK_TICK_MS = 30_000;
 /** Fermeture d'un menu ouvert au clavier si la souris n'est jamais venue dessus. */
 const ABANDONED_CLOSE_MS = 20_000;
 
-type Tab = "controls" | "dashboard" | "clipboard" | "launcher" | "settings";
+type Tab = "controls" | "dashboard" | "clipboard" | "launcher" | "timer" | "settings";
 
 const TABS: { id: Tab; label: string; icon: ComponentType<{ size?: number }> }[] = [
   { id: "controls", label: "Controls", icon: SlidersHorizontal },
   { id: "dashboard", label: "Dashboard", icon: Activity },
   { id: "clipboard", label: "Clipboard", icon: ClipboardList },
   { id: "launcher", label: "Launcher", icon: Search },
+  { id: "timer", label: "Minuteur", icon: TimerIcon },
   { id: "settings", label: "Réglages", icon: SettingsIcon },
 ];
 
@@ -66,18 +72,25 @@ export function IslandApp() {
   const { openDelayMs, closeDelayMs } = settings.animations;
   const { autoHideSeconds, showMediaInPill } = settings.island;
   const media = showMediaInPill ? mediaInfo : null;
+  const { snapshot: timer, finished } = useTimer();
+  const timerVisible = timer.status !== "idle";
 
   useClickThroughBounds(pillRef);
 
   const clearHoverTimer = () => window.clearTimeout(hoverTimer.current);
 
   // L'Island se cache après le délai réglé une fois repliée (0 = jamais). Tant que le menu est
-  // déployé, le compte à rebours est suspendu, donc le dashboard reste visible pendant qu'on le regarde.
+  // déployé ou qu'un minuteur est actif, le compte à rebours est suspendu.
   useEffect(() => {
-    if (!visible || expanded || autoHideSeconds === 0) return;
+    if (!visible || expanded || autoHideSeconds === 0 || timerVisible) return;
     const timeout = window.setTimeout(() => setVisible(false), autoHideSeconds * 1000);
     return () => window.clearTimeout(timeout);
-  }, [visible, expanded, autoHideSeconds]);
+  }, [visible, expanded, autoHideSeconds, timerVisible]);
+
+  // Une phase du minuteur se termine : l'Island réapparaît, même si elle était cachée.
+  useEffect(() => {
+    if (finished) setVisible(true);
+  }, [finished]);
 
   // Un menu ouvert au clavier (Alt+Space) puis abandonné se referme tout seul.
   useEffect(() => {
@@ -141,7 +154,11 @@ export function IslandApp() {
     }, closeDelayMs);
   };
 
-  const size = !visible ? HIDDEN : expanded ? EXPANDED : media ? IDLE_WITH_MEDIA : IDLE;
+  const idleSize = {
+    width: IDLE_BASE_WIDTH + (media ? IDLE_MEDIA_EXTRA : 0) + (timerVisible ? IDLE_TIMER_EXTRA : 0),
+    height: IDLE_HEIGHT,
+  };
+  const size = !visible ? HIDDEN : expanded ? EXPANDED : idleSize;
 
   return (
     <div className="flex h-full w-full justify-center">
@@ -226,6 +243,7 @@ export function IslandApp() {
                     {tab === "controls" && <ControlsTab />}
                     {tab === "dashboard" && <DashboardTab />}
                     {tab === "clipboard" && <ClipboardTab />}
+                    {tab === "timer" && <TimerTab snapshot={timer} finished={finished} />}
                     {tab === "settings" && <SettingsTab />}
                     {tab === "launcher" && (
                       <LauncherTab focusToken={launcherFocus} onDone={() => setExpanded(false)} />
@@ -244,7 +262,11 @@ export function IslandApp() {
               transition={fade}
               className="h-full w-full cursor-pointer"
             >
-              <MediaPill media={media} time={time} />
+              <MediaPill
+                media={media}
+                time={time}
+                timerChip={timerVisible ? <TimerChip snapshot={timer} flashing={finished !== null} /> : null}
+              />
             </motion.div>
           )}
         </AnimatePresence>
