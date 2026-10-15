@@ -6,6 +6,7 @@ use serde::Serialize;
 use sysinfo::{Components, Disks, Networks, ProcessesToUpdate, System};
 use tauri::{AppHandle, Emitter};
 
+use super::gpu::{read_nvidia, GpuStats};
 use super::processes::{top_groups, ProcessGroup};
 
 pub const EVENT_SYSTEM_STATS: &str = "system-stats";
@@ -59,6 +60,7 @@ pub struct SystemStats {
     pub memory: MemoryStats,
     pub disk: DiskStats,
     pub network: NetworkStats,
+    pub gpu: Option<GpuStats>,
     pub processes: Vec<ProcessGroup>,
 }
 
@@ -176,6 +178,7 @@ fn collect(
             download_mb_s: (received as f64 / elapsed / BYTES_PER_MB) as f32,
             upload_mb_s: (transmitted as f64 / elapsed / BYTES_PER_MB) as f32,
         },
+        gpu: read_nvidia(),
         processes: top_groups(system, cpu_count),
     }
 }
