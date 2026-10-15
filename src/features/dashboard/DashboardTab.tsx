@@ -10,10 +10,14 @@ import { SpeedtestWidget } from "./SpeedtestWidget";
 const formatGb = (value: number) => value.toFixed(1);
 
 export function DashboardTab() {
-  const { stats, history } = useSystemStats();
+  const { stats, history, error } = useSystemStats();
 
   if (!stats) {
-    return <p className="text-sm text-white/50">Lecture des métriques…</p>;
+    return error ? (
+      <p className="text-sm text-red-400">{error}</p>
+    ) : (
+      <p className="text-sm text-white/50">Lecture des métriques…</p>
+    );
   }
 
   const diskPercent = stats.disk.totalGb > 0 ? (stats.disk.usedGb / stats.disk.totalGb) * 100 : 0;
