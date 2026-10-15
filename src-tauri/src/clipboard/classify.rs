@@ -59,3 +59,30 @@ fn is_url(text: &str) -> bool {
     let lower = text.to_ascii_lowercase();
     lower.starts_with("http://") || lower.starts_with("https://") || lower.starts_with("www.")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn detects_hex_colors() {
+        assert_eq!(classify_text("#ff8800"), ContentKind::Color);
+        assert_eq!(classify_text("  #FFF  "), ContentKind::Color);
+        assert_eq!(classify_text("#12345"), ContentKind::Text);
+        assert_eq!(classify_text("#gggggg"), ContentKind::Text);
+    }
+
+    #[test]
+    fn detects_urls() {
+        assert_eq!(classify_text("https://example.com/page?q=1"), ContentKind::Url);
+        assert_eq!(classify_text("www.example.com"), ContentKind::Url);
+        assert_eq!(classify_text("voir https://example.com"), ContentKind::Text);
+    }
+
+    #[test]
+    fn detects_code() {
+        let rust = "fn main() {\n    let x = 1;\n    println!(\"{}\", x);\n}";
+        assert_eq!(classify_text(rust), ContentKind::Code);
+        assert_eq!(classify_text("Bonjour, comment ça va ?"), ContentKind::Text);
+    }
+}
