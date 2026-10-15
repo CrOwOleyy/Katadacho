@@ -1,3 +1,4 @@
+mod clipboard;
 mod controls;
 mod db;
 mod state;
@@ -26,6 +27,7 @@ pub fn run() {
                 island.set_ignore_cursor_events(true)?;
             }
             click_through::start(app.handle().clone());
+            clipboard::listener::start(app.handle().clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
