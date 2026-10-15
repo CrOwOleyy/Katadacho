@@ -97,7 +97,7 @@ export function LauncherTab({ focusToken, onDone }: LauncherTabProps) {
 
       {error && <p className="truncate text-xs text-red-400">{error}</p>}
 
-      <div className="flex max-h-[200px] flex-col gap-0.5 overflow-y-auto [scrollbar-width:none]">
+      <div className="flex max-h-[290px] flex-col gap-0.5 overflow-y-auto [scrollbar-width:none]">
         {results.map((result, index) => (
           <ResultRow
             key={`${result.kind}:${result.path}`}
