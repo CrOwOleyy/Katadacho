@@ -1,4 +1,6 @@
 mod controls;
+mod db;
+mod state;
 mod speedtest;
 mod telemetry;
 mod window;
@@ -16,6 +18,9 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .manage(ClickThroughState::default())
         .setup(|app| {
+            let data_dir = app.path().local_data_dir()?.join("Katadacho");
+            app.manage(db::Database::open(&data_dir)?);
+            app.manage(state::AppPaths { data_dir });
             window::position_island(app)?;
             if let Some(island) = app.get_webview_window(window::ISLAND_LABEL) {
                 island.set_ignore_cursor_events(true)?;
