@@ -5,3 +5,9 @@ export interface MediaInfo {
   coverBase64: string | null;
   coverMime: string | null;
 }
+
+export interface MediaPosition {
+  positionSeconds: number;
+  durationSeconds: number | null;
+  playing: boolean;
+}
