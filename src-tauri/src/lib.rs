@@ -28,6 +28,7 @@ pub fn run() {
             }
             click_through::start(app.handle().clone());
             clipboard::listener::start(app.handle().clone());
+            clipboard::foreground::start();
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -45,6 +46,10 @@ pub fn run() {
             telemetry::stop_system_stats,
             telemetry::kill_process,
             speedtest::run_speedtest,
+            clipboard::commands::get_clipboard_history,
+            clipboard::commands::toggle_pin_clipboard,
+            clipboard::commands::delete_clipboard_item,
+            clipboard::commands::paste_clipboard_item,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

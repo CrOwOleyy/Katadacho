@@ -1,5 +1,8 @@
 pub mod classify;
+pub mod commands;
+pub mod foreground;
 pub mod listener;
+pub mod paste;
 pub mod reader;
 pub mod source;
 pub mod store;
