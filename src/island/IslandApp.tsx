@@ -7,11 +7,15 @@ import { ControlsTab } from "../features/controls/ControlsTab";
 import { DashboardTab } from "../features/dashboard/DashboardTab";
 import { LauncherTab } from "../features/launcher/LauncherTab";
 import { Soul } from "../components/soul/Soul";
+import { MediaPill } from "../features/media/MediaPill";
+import { useMedia } from "../hooks/useMedia";
 import { useClickThroughBounds } from "../hooks/useClickThrough";
 import { springSpring } from "../lib/motion";
 
 const HIDDEN = { width: 200, height: 4 };
 const IDLE = { width: 180, height: 36 };
+/** Pilule élargie quand un média est en cours, pour loger la pochette et l'onde sonore. */
+const IDLE_WITH_MEDIA = { width: 270, height: 36 };
 const EXPANDED = { width: 760, height: 480 };
 const CLOCK_TICK_MS = 30_000;
 /** Disparition de l'Island 15 s après qu'elle s'est repliée. */
@@ -59,6 +63,7 @@ export function IslandApp() {
   const pointerInside = useRef(false);
   const hoverTimer = useRef<number | undefined>(undefined);
   const time = useClock();
+  const media = useMedia();
 
   useClickThroughBounds(pillRef);
 
@@ -134,7 +139,7 @@ export function IslandApp() {
     }, CLOSE_DELAY_MS);
   };
 
-  const size = !visible ? HIDDEN : expanded ? EXPANDED : IDLE;
+  const size = !visible ? HIDDEN : expanded ? EXPANDED : media ? IDLE_WITH_MEDIA : IDLE;
 
   return (
     <div className="flex h-full w-full justify-center">
@@ -234,10 +239,9 @@ export function IslandApp() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="flex h-full cursor-pointer items-center justify-between px-3"
+              className="h-full w-full cursor-pointer"
             >
-              <Soul />
-              <span className="font-mono text-xs text-white/70">{time}</span>
+              <MediaPill media={media} time={time} />
             </motion.div>
           )}
         </AnimatePresence>
