@@ -7,6 +7,7 @@ mod settings;
 mod state;
 mod speedtest;
 mod telemetry;
+mod timer;
 mod window;
 
 use tauri::Manager;
@@ -23,6 +24,7 @@ pub fn run() {
         .manage(ClickThroughState::default())
         .manage(launcher::Launcher::default())
         .manage(media::MediaState::default())
+        .manage(timer::TimerState::default())
         .setup(|app| {
             let data_dir = app.path().local_data_dir()?.join("Katadacho");
             let database = db::Database::open(&data_dir)?;
@@ -39,6 +41,7 @@ pub fn run() {
             launcher::start_indexing(app.handle().clone());
             launcher::hotkey::register(app.handle());
             media::start(app.handle().clone());
+            timer::start(app.handle().clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -76,6 +79,13 @@ pub fn run() {
             settings::get_settings,
             settings::save_settings,
             settings::reset_settings,
+            timer::timer_get,
+            timer::timer_start_pomodoro,
+            timer::timer_start_countdown,
+            timer::timer_pause,
+            timer::timer_resume,
+            timer::timer_reset,
+            timer::timer_skip,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
