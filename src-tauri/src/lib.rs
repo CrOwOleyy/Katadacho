@@ -57,6 +57,7 @@ pub fn run() {
             launcher::commands::launch_item,
             launcher::commands::open_item_location,
             launcher::commands::reindex_launcher,
+            launcher::commands::get_launcher_icon,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

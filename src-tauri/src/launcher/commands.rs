@@ -7,7 +7,9 @@ use windows::Win32::UI::Shell::ShellExecuteW;
 use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
 
 use super::model::LauncherResult;
-use super::{reindex, Launcher};
+use super::{icons, reindex, Launcher};
+use crate::controls::audio::ComGuard;
+use crate::state::AppPaths;
 
 /// ShellExecuteW renvoie une valeur supérieure à 32 en cas de succès.
 const SHELL_EXECUTE_SUCCESS_THRESHOLD: isize = 32;
@@ -55,4 +57,16 @@ pub fn open_item_location(path: String) -> Result<(), String> {
 #[tauri::command]
 pub fn reindex_launcher(app: AppHandle) {
     reindex(app);
+}
+
+/// Icône PNG en base64 d'un élément, extraite à la demande et mise en cache sur le disque.
+#[tauri::command]
+pub async fn get_launcher_icon(paths: State<'_, AppPaths>, path: String) -> Result<String, String> {
+    let cache_dir = paths.icon_cache();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _com = ComGuard::new().map_err(|e| e.to_string())?;
+        icons::icon_base64(&path, &cache_dir)
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
