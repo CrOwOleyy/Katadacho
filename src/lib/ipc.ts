@@ -4,6 +4,7 @@ import type { SpeedtestEvent } from "./types/speedtest";
 import type { ClipboardFilter, ClipboardItem } from "./types/clipboard";
 import type { LauncherResult } from "./types/launcher";
 import type { MediaInfo } from "./types/media";
+import type { Settings } from "./types/settings";
 
 export const ipc = {
   updateIslandBounds: (bounds: IslandBounds) => invoke<void>("update_island_bounds", { bounds }),
@@ -41,6 +42,10 @@ export const ipc = {
   getMediaState: () => invoke<MediaInfo | null>("get_media_state"),
   startAudioLevels: () => invoke<void>("start_audio_levels"),
   stopAudioLevels: () => invoke<void>("stop_audio_levels"),
+
+  getSettings: () => invoke<Settings>("get_settings"),
+  saveSettings: (settings: Settings) => invoke<Settings>("save_settings", { settings }),
+  resetSettings: () => invoke<Settings>("reset_settings"),
 
   runSpeedtest: (onEvent: (event: SpeedtestEvent) => void) => {
     const channel = new Channel<SpeedtestEvent>();
