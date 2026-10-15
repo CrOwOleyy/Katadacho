@@ -13,7 +13,7 @@ interface VolumeCardProps {
 
 export function VolumeCard({ state, onVolume, onToggleMute, onSelectDevice }: VolumeCardProps) {
   return (
-    <BentoCard title="Volume" icon={state.muted ? <VolumeX size={14} /> : <Volume2 size={14} />} className="col-span-2">
+    <BentoCard title="Volume" icon={state.muted ? <VolumeX size={14} /> : <Volume2 size={14} />} className="col-span-6">
       <div className="flex items-center gap-3">
         <button
           type="button"

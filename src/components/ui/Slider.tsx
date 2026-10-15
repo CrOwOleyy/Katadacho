@@ -4,6 +4,7 @@ interface SliderProps {
   value: number;
   min?: number;
   max?: number;
+  step?: number;
   label: string;
   onCommit: (value: number) => void;
 }
@@ -12,7 +13,7 @@ interface SliderProps {
  * Curseur fluide : l'affichage suit le doigt immédiatement, mais la commande
  * système n'est envoyée qu'après une courte pause, pour ne pas saturer le matériel.
  */
-export function Slider({ value, min = 0, max = 100, label, onCommit }: SliderProps) {
+export function Slider({ value, min = 0, max = 100, step = 1, label, onCommit }: SliderProps) {
   const [local, setLocal] = useState(value);
   const [dragging, setDragging] = useState(false);
   const timer = useRef<number | undefined>(undefined);
@@ -37,6 +38,7 @@ export function Slider({ value, min = 0, max = 100, label, onCommit }: SliderPro
       aria-label={label}
       min={min}
       max={max}
+      step={step}
       value={local}
       onChange={(event) => handleChange(Number(event.target.value))}
       onPointerDown={() => setDragging(true)}
