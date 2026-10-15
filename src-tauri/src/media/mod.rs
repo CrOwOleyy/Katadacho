@@ -18,6 +18,7 @@ use windows::Storage::Streams::DataReader;
 
 use crate::controls::audio::ComGuard;
 
+pub mod controls;
 pub mod levels;
 
 pub const EVENT_MEDIA_CHANGED: &str = "media-changed";
