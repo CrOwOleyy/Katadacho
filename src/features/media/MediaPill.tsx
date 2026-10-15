@@ -1,4 +1,5 @@
 import { Music } from "lucide-react";
+import type { ReactNode } from "react";
 import { Soul } from "../../components/soul/Soul";
 import type { MediaInfo } from "../../lib/types/media";
 import { Waveform } from "./Waveform";
@@ -6,10 +7,12 @@ import { Waveform } from "./Waveform";
 interface MediaPillProps {
   media: MediaInfo | null;
   time: string;
+  /** Puce du minuteur, affichée avant l'heure quand un minuteur est actif. */
+  timerChip?: ReactNode;
 }
 
 /** Contenu de la pilule repliée : Soul, pochette et onde sonore du média en cours, puis l'heure. */
-export function MediaPill({ media, time }: MediaPillProps) {
+export function MediaPill({ media, time, timerChip }: MediaPillProps) {
   const label = media ? [media.title, media.artist].filter(Boolean).join(" · ") : undefined;
 
   return (
@@ -33,6 +36,7 @@ export function MediaPill({ media, time }: MediaPillProps) {
         </>
       )}
 
+      {timerChip}
       <span className="font-mono text-xs text-white/70">{time}</span>
     </div>
   );
