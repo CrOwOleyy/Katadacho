@@ -1,4 +1,5 @@
 mod controls;
+mod speedtest;
 mod telemetry;
 mod window;
 
@@ -36,6 +37,7 @@ pub fn run() {
             telemetry::start_system_stats,
             telemetry::stop_system_stats,
             telemetry::kill_process,
+            speedtest::run_speedtest,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
