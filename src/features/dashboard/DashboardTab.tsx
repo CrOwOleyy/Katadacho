@@ -58,9 +58,9 @@ export function DashboardTab() {
         <Sparkline values={history.disk} />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <BentoCard title="Réseau" icon={<Activity size={14} />}>
-          <div className="grid grid-cols-2 gap-2 font-mono text-xs">
+      <div className="grid grid-cols-12 gap-3">
+        <BentoCard title="Réseau" icon={<Activity size={14} />} className="col-span-3">
+          <div className="flex flex-col gap-1.5 font-mono text-xs">
             <span className="text-white/60">↓ {stats.network.downloadMbS.toFixed(2)} Mo/s</span>
             <span className="text-white/60">↑ {stats.network.uploadMbS.toFixed(2)} Mo/s</span>
             <span className="text-white/60">Lecture disque {stats.disk.readMbS.toFixed(2)} Mo/s</span>
@@ -68,7 +68,7 @@ export function DashboardTab() {
           </div>
         </BentoCard>
 
-        <BentoCard title="Top processus" icon={<Activity size={14} />}>
+        <BentoCard title="Top processus" icon={<Activity size={14} />} className="col-span-5">
           <ProcessList processes={stats.processes} onKill={(pid) => ipc.killProcess(pid)} />
         </BentoCard>
 
