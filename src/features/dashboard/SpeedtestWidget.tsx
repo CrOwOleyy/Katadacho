@@ -65,13 +65,13 @@ export function SpeedtestWidget() {
   const running = phase === "ping" || phase === "download" || phase === "upload";
 
   return (
-    <BentoCard title="Speedtest" icon={<Gauge size={14} />} className="col-span-2">
-      <div className="flex items-center gap-4">
+    <BentoCard title="Speedtest" icon={<Gauge size={14} />} className="col-span-4">
+      <div className="flex flex-col items-center gap-3">
         <SpeedGauge
           mbps={live}
           label={phase === "upload" ? "Envoi" : phase === "download" ? "Réception" : "Mbps"}
         />
-        <div className="grid flex-1 grid-cols-2 gap-2 text-xs">
+        <div className="grid w-full grid-cols-2 gap-2 text-xs">
           <Stat label="Ping" value={result.pingMs} unit="ms" />
           <Stat label="Gigue" value={result.jitterMs} unit="ms" />
           <Stat label="Download" value={result.downloadMbps} unit="Mbps" />
