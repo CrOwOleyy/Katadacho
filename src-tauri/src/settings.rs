@@ -191,6 +191,17 @@ pub fn save_settings(
     Ok(settings)
 }
 
+
+/// Remet tous les réglages à leurs valeurs par défaut et notifie le frontend.
+#[tauri::command]
+pub fn reset_settings(
+    app: AppHandle,
+    database: State<'_, Database>,
+    state: State<'_, SettingsState>,
+) -> Result<Settings, String> {
+    save_settings(app, database, state, Settings::default())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
