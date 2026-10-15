@@ -2,6 +2,7 @@ mod clipboard;
 mod controls;
 mod db;
 mod launcher;
+mod media;
 mod state;
 mod speedtest;
 mod telemetry;
@@ -20,6 +21,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .manage(ClickThroughState::default())
         .manage(launcher::Launcher::default())
+        .manage(media::MediaState::default())
         .setup(|app| {
             let data_dir = app.path().local_data_dir()?.join("Katadacho");
             app.manage(db::Database::open(&data_dir)?);
@@ -33,6 +35,7 @@ pub fn run() {
             clipboard::foreground::start();
             launcher::start_indexing(app.handle().clone());
             launcher::hotkey::register(app.handle());
+            media::start(app.handle().clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -59,6 +62,9 @@ pub fn run() {
             launcher::commands::open_item_location,
             launcher::commands::reindex_launcher,
             launcher::commands::get_launcher_icon,
+            media::get_media_state,
+            media::levels::start_audio_levels,
+            media::levels::stop_audio_levels,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
