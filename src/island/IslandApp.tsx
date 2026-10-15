@@ -38,15 +38,13 @@ export function IslandApp() {
 
   useClickThroughBounds(pillRef);
 
-  // L'Island disparaît 15 s après son affichage, qu'elle soit ouverte ou non.
+  // L'Island disparaît 15 s après être repliée. Tant que le menu est déployé (souris dessus),
+  // le compte à rebours est suspendu, donc le dashboard reste visible pendant qu'on le regarde.
   useEffect(() => {
-    if (!visible) return;
-    const timeout = window.setTimeout(() => {
-      setVisible(false);
-      setExpanded(false);
-    }, VISIBLE_MS);
+    if (!visible || expanded) return;
+    const timeout = window.setTimeout(() => setVisible(false), VISIBLE_MS);
     return () => window.clearTimeout(timeout);
-  }, [visible]);
+  }, [visible, expanded]);
 
   // Échap ferme le menu déployé sans cacher l'Island.
   useEffect(() => {
