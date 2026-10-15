@@ -3,6 +3,7 @@ import { ipc } from "../../lib/ipc";
 import type { AudioState, NetworkBluetoothState } from "../../lib/types/controls";
 import { BluetoothCard } from "./BluetoothCard";
 import { BrightnessCard } from "./BrightnessCard";
+import { MediaCard } from "./MediaCard";
 import { VolumeCard } from "./VolumeCard";
 import { WifiCard } from "./WifiCard";
 
@@ -71,6 +72,7 @@ export function ControlsTab() {
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-6 gap-3">
+        <MediaCard />
         <WifiCard
           state={network}
           onToggle={(enable) => void run(() => ipc.toggleWifi(enable))}
