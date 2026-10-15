@@ -1997,6 +1997,8 @@ dependencies = [
 name = "katadacho"
 version = "0.1.0"
 dependencies = [
+ "bytes",
+ "futures-util",
  "nvml-wrapper",
  "serde",
  "serde_json",
