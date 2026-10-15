@@ -6,6 +6,7 @@ import type { LauncherResult } from "./types/launcher";
 import type { MediaInfo, MediaPosition } from "./types/media";
 import type { Settings } from "./types/settings";
 import type { TimerSnapshot } from "./types/timer";
+import type { NotificationAccess } from "./types/notifications";
 
 export const ipc = {
   updateIslandBounds: (bounds: IslandBounds) => invoke<void>("update_island_bounds", { bounds }),
@@ -56,6 +57,9 @@ export const ipc = {
   timerResume: () => invoke<TimerSnapshot>("timer_resume"),
   timerReset: () => invoke<TimerSnapshot>("timer_reset"),
   timerSkip: () => invoke<TimerSnapshot>("timer_skip"),
+
+  getNotificationAccess: () => invoke<NotificationAccess>("get_notification_access"),
+  requestNotificationAccess: () => invoke<NotificationAccess>("request_notification_access"),
 
   getSettings: () => invoke<Settings>("get_settings"),
   saveSettings: (settings: Settings) => invoke<Settings>("save_settings", { settings }),
