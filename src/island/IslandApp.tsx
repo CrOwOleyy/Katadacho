@@ -266,7 +266,7 @@ export function IslandApp() {
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: tabSeconds }}
                   >
-                    {tab === "controls" && <ControlsTab />}
+                    {tab === "controls" && <ControlsTab mood={mood} />}
                     {tab === "dashboard" && <DashboardTab />}
                     {tab === "clipboard" && <ClipboardTab />}
                     {tab === "timer" && <TimerTab snapshot={timer} finished={finished} />}
