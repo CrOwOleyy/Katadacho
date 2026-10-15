@@ -215,9 +215,9 @@ export function IslandApp() {
               transition={fade}
               className="flex h-full flex-col"
             >
-              <header className="flex shrink-0 items-center justify-between px-4 pb-2 pt-4">
+              <header className="flex shrink-0 items-center justify-between px-4 pb-1 pt-3">
                 <div className="flex items-center gap-2">
-                  <Soul size={28} mood={mood} />
+                  <Soul size={42} mood={mood} />
                   <nav className="ml-1 flex items-center gap-0.5" aria-label="Sections">
                     {TABS.map((item) => {
                       const Icon = item.icon;
