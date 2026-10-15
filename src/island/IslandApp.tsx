@@ -1,16 +1,18 @@
 import { listen } from "@tauri-apps/api/event";
 import { motion, AnimatePresence } from "motion/react";
-import { Activity, ClipboardList, Search, SlidersHorizontal, X } from "lucide-react";
+import { Activity, ClipboardList, Search, Settings as SettingsIcon, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { ClipboardTab } from "../features/clipboard/ClipboardTab";
 import { ControlsTab } from "../features/controls/ControlsTab";
 import { DashboardTab } from "../features/dashboard/DashboardTab";
 import { LauncherTab } from "../features/launcher/LauncherTab";
+import { SettingsTab } from "../features/settings/SettingsTab";
 import { Soul } from "../components/soul/Soul";
 import { MediaPill } from "../features/media/MediaPill";
 import { useMedia } from "../hooks/useMedia";
 import { useClickThroughBounds } from "../hooks/useClickThrough";
-import { springSpring } from "../lib/motion";
+import { useMotionConfig } from "../hooks/useMotion";
+import { useSettings } from "../store/SettingsContext";
 
 const HIDDEN = { width: 200, height: 4 };
 const IDLE = { width: 180, height: 36 };
@@ -18,22 +20,17 @@ const IDLE = { width: 180, height: 36 };
 const IDLE_WITH_MEDIA = { width: 270, height: 36 };
 const EXPANDED = { width: 760, height: 480 };
 const CLOCK_TICK_MS = 30_000;
-/** Disparition de l'Island 15 s après qu'elle s'est repliée. */
-const VISIBLE_MS = 15_000;
-/** Survol prolongé nécessaire pour ouvrir le menu : évite les ouvertures en passant. */
-const OPEN_DELAY_MS = 300;
-/** Délai avant fermeture quand la souris quitte le menu : tolère une sortie accidentelle. */
-const CLOSE_DELAY_MS = 450;
 /** Fermeture d'un menu ouvert au clavier si la souris n'est jamais venue dessus. */
 const ABANDONED_CLOSE_MS = 20_000;
 
-type Tab = "controls" | "dashboard" | "clipboard" | "launcher";
+type Tab = "controls" | "dashboard" | "clipboard" | "launcher" | "settings";
 
 const TABS: { id: Tab; label: string; icon: ComponentType<{ size?: number }> }[] = [
   { id: "controls", label: "Controls", icon: SlidersHorizontal },
   { id: "dashboard", label: "Dashboard", icon: Activity },
   { id: "clipboard", label: "Clipboard", icon: ClipboardList },
   { id: "launcher", label: "Launcher", icon: Search },
+  { id: "settings", label: "Réglages", icon: SettingsIcon },
 ];
 
 function useClock() {
@@ -63,19 +60,24 @@ export function IslandApp() {
   const pointerInside = useRef(false);
   const hoverTimer = useRef<number | undefined>(undefined);
   const time = useClock();
-  const media = useMedia();
+  const mediaInfo = useMedia();
+  const { settings } = useSettings();
+  const { spring, fade, tabSeconds } = useMotionConfig();
+  const { openDelayMs, closeDelayMs } = settings.animations;
+  const { autoHideSeconds, showMediaInPill } = settings.island;
+  const media = showMediaInPill ? mediaInfo : null;
 
   useClickThroughBounds(pillRef);
 
   const clearHoverTimer = () => window.clearTimeout(hoverTimer.current);
 
-  // L'Island disparaît 15 s après être repliée. Tant que le menu est déployé, le compte à rebours
-  // est suspendu, donc le dashboard reste visible pendant qu'on le regarde.
+  // L'Island se cache après le délai réglé une fois repliée (0 = jamais). Tant que le menu est
+  // déployé, le compte à rebours est suspendu, donc le dashboard reste visible pendant qu'on le regarde.
   useEffect(() => {
-    if (!visible || expanded) return;
-    const timeout = window.setTimeout(() => setVisible(false), VISIBLE_MS);
+    if (!visible || expanded || autoHideSeconds === 0) return;
+    const timeout = window.setTimeout(() => setVisible(false), autoHideSeconds * 1000);
     return () => window.clearTimeout(timeout);
-  }, [visible, expanded]);
+  }, [visible, expanded, autoHideSeconds]);
 
   // Un menu ouvert au clavier (Alt+Space) puis abandonné se referme tout seul.
   useEffect(() => {
@@ -126,7 +128,7 @@ export function IslandApp() {
     // Depuis la barre cachée, l'Island réapparaît tout de suite, le menu suit si le survol continue.
     if (!visible) setVisible(true);
     if (!expanded) {
-      hoverTimer.current = window.setTimeout(() => setExpanded(true), OPEN_DELAY_MS);
+      hoverTimer.current = window.setTimeout(() => setExpanded(true), openDelayMs);
     }
   };
 
@@ -136,7 +138,7 @@ export function IslandApp() {
     if (!expanded) return;
     hoverTimer.current = window.setTimeout(() => {
       if (!pointerInside.current && !isTyping(pillRef.current)) setExpanded(false);
-    }, CLOSE_DELAY_MS);
+    }, closeDelayMs);
   };
 
   const size = !visible ? HIDDEN : expanded ? EXPANDED : media ? IDLE_WITH_MEDIA : IDLE;
@@ -155,7 +157,7 @@ export function IslandApp() {
           }
         }}
         animate={{ width: size.width, height: size.height }}
-        transition={springSpring}
+        transition={spring}
         className={`relative flex flex-col overflow-hidden border border-white/10 shadow-2xl ${
           visible ? "bg-[color:var(--color-island)]" : "bg-[color:var(--accent-color)]/50"
         } ${expanded ? "rounded-[28px]" : "rounded-full"}`}
@@ -167,7 +169,7 @@ export function IslandApp() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={fade}
               className="flex h-full flex-col"
             >
               <header className="flex shrink-0 items-center justify-between px-4 pb-2 pt-4">
@@ -189,7 +191,7 @@ export function IslandApp() {
                           {active && (
                             <motion.span
                               layoutId="active-tab"
-                              transition={springSpring}
+                              transition={spring}
                               className="absolute inset-0 rounded-lg bg-white/12"
                             />
                           )}
@@ -219,11 +221,12 @@ export function IslandApp() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.14 }}
+                    transition={{ duration: tabSeconds }}
                   >
                     {tab === "controls" && <ControlsTab />}
                     {tab === "dashboard" && <DashboardTab />}
                     {tab === "clipboard" && <ClipboardTab />}
+                    {tab === "settings" && <SettingsTab />}
                     {tab === "launcher" && (
                       <LauncherTab focusToken={launcherFocus} onDone={() => setExpanded(false)} />
                     )}
@@ -238,7 +241,7 @@ export function IslandApp() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={fade}
               className="h-full w-full cursor-pointer"
             >
               <MediaPill media={media} time={time} />
