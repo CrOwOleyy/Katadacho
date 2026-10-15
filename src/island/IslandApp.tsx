@@ -7,8 +7,10 @@ import { ControlsTab } from "../features/controls/ControlsTab";
 import { DashboardTab } from "../features/dashboard/DashboardTab";
 import { LauncherTab } from "../features/launcher/LauncherTab";
 import { SettingsTab } from "../features/settings/SettingsTab";
+import { NotificationBanner } from "../features/notifications/NotificationBanner";
 import { TimerChip } from "../features/timer/TimerChip";
 import { TimerTab } from "../features/timer/TimerTab";
+import { useNotifications } from "../hooks/useNotifications";
 import { useTimer } from "../hooks/useTimer";
 import { Soul } from "../components/soul/Soul";
 import { MediaPill } from "../features/media/MediaPill";
@@ -19,6 +21,8 @@ import { useSettings } from "../store/SettingsContext";
 
 const HIDDEN = { width: 200, height: 4 };
 const IDLE_HEIGHT = 36;
+/** Taille de la pilule pendant l'affichage d'une notification. */
+const BANNER = { width: 460, height: 68 };
 /** Largeur de la pilule repliée : base, plus la place du média et du minuteur quand ils sont affichés. */
 const IDLE_BASE_WIDTH = 180;
 const IDLE_MEDIA_EXTRA = 90;
@@ -73,6 +77,7 @@ export function IslandApp() {
   const { autoHideSeconds, showMediaInPill } = settings.island;
   const media = showMediaInPill ? mediaInfo : null;
   const { snapshot: timer, finished } = useTimer();
+  const { current: toast, pending, dismissCurrent } = useNotifications();
   const timerVisible = timer.status !== "idle";
 
   useClickThroughBounds(pillRef);
@@ -82,15 +87,21 @@ export function IslandApp() {
   // L'Island se cache après le délai réglé une fois repliée (0 = jamais). Tant que le menu est
   // déployé ou qu'un minuteur est actif, le compte à rebours est suspendu.
   useEffect(() => {
-    if (!visible || expanded || autoHideSeconds === 0 || timerVisible) return;
+    if (!visible || expanded || autoHideSeconds === 0 || timerVisible || toast !== null) return;
     const timeout = window.setTimeout(() => setVisible(false), autoHideSeconds * 1000);
     return () => window.clearTimeout(timeout);
-  }, [visible, expanded, autoHideSeconds, timerVisible]);
+  }, [visible, expanded, autoHideSeconds, timerVisible, toast]);
 
   // Une phase du minuteur se termine : l'Island réapparaît, même si elle était cachée.
   useEffect(() => {
     if (finished) setVisible(true);
   }, [finished]);
+
+  // Une notification arrive : l'Island réapparaît, même si elle était cachée.
+  const toastId = toast?.id;
+  useEffect(() => {
+    if (toastId !== undefined) setVisible(true);
+  }, [toastId]);
 
   // Un menu ouvert au clavier (Alt+Space) puis abandonné se referme tout seul.
   useEffect(() => {
@@ -158,7 +169,7 @@ export function IslandApp() {
     width: IDLE_BASE_WIDTH + (media ? IDLE_MEDIA_EXTRA : 0) + (timerVisible ? IDLE_TIMER_EXTRA : 0),
     height: IDLE_HEIGHT,
   };
-  const size = !visible ? HIDDEN : expanded ? EXPANDED : idleSize;
+  const size = !visible ? HIDDEN : expanded ? EXPANDED : toast ? BANNER : idleSize;
 
   return (
     <div className="flex h-full w-full justify-center">
@@ -253,7 +264,24 @@ export function IslandApp() {
               </div>
             </motion.div>
           )}
-          {visible && !expanded && (
+          {visible && !expanded && toast && (
+            <motion.div
+              key="toast"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={fade}
+              className="h-full w-full"
+            >
+              <NotificationBanner
+                toast={toast}
+                pending={pending}
+                showBody={settings.notifications.showBody}
+                onDismiss={dismissCurrent}
+              />
+            </motion.div>
+          )}
+          {visible && !expanded && !toast && (
             <motion.div
               key="idle"
               initial={{ opacity: 0 }}
