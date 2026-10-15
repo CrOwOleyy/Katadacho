@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ControlsTab } from "../features/controls/ControlsTab";
+import { DashboardTab } from "../features/dashboard/DashboardTab";
 import { Soul } from "../components/soul/Soul";
 import { useClickThroughBounds } from "../hooks/useClickThrough";
 import { springSpring } from "../lib/motion";
@@ -10,6 +11,13 @@ const HIDDEN = { width: 240, height: 6 };
 const IDLE = { width: 180, height: 36 };
 const EXPANDED = { width: 640, height: 360 };
 const CLOCK_TICK_MS = 30_000;
+
+type Tab = "controls" | "dashboard";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "controls", label: "Controls" },
+  { id: "dashboard", label: "Dashboard" },
+];
 const VISIBLE_MS = 15_000;
 
 function useClock() {
@@ -24,6 +32,7 @@ function useClock() {
 export function IslandApp() {
   const [visible, setVisible] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const [tab, setTab] = useState<Tab>("controls");
   const pillRef = useRef<HTMLDivElement>(null);
   const time = useClock();
 
@@ -82,7 +91,18 @@ export function IslandApp() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Soul size={20} />
-                  <span className="text-sm font-medium">Controls</span>
+                  {TABS.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setTab(item.id)}
+                      className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
+                        tab === item.id ? "bg-white/15 text-white" : "text-white/50 hover:text-white"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
                 </div>
                 <button
                   type="button"
@@ -93,7 +113,7 @@ export function IslandApp() {
                   <X size={16} />
                 </button>
               </div>
-              <ControlsTab />
+              {tab === "controls" ? <ControlsTab /> : <DashboardTab />}
             </motion.div>
           )}
           {visible && !expanded && (
