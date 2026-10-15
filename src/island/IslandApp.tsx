@@ -1,8 +1,11 @@
+import { listen } from "@tauri-apps/api/event";
 import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ControlsTab } from "../features/controls/ControlsTab";
+import { ClipboardTab } from "../features/clipboard/ClipboardTab";
 import { DashboardTab } from "../features/dashboard/DashboardTab";
+import { LauncherTab } from "../features/launcher/LauncherTab";
 import { Soul } from "../components/soul/Soul";
 import { useClickThroughBounds } from "../hooks/useClickThrough";
 import { springSpring } from "../lib/motion";
@@ -12,11 +15,13 @@ const IDLE = { width: 180, height: 36 };
 const EXPANDED = { width: 640, height: 360 };
 const CLOCK_TICK_MS = 30_000;
 
-type Tab = "controls" | "dashboard";
+type Tab = "controls" | "dashboard" | "clipboard" | "launcher";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "controls", label: "Controls" },
   { id: "dashboard", label: "Dashboard" },
+  { id: "clipboard", label: "Clipboard" },
+  { id: "launcher", label: "Launcher" },
 ];
 const VISIBLE_MS = 15_000;
 
@@ -33,6 +38,7 @@ export function IslandApp() {
   const [visible, setVisible] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [tab, setTab] = useState<Tab>("controls");
+  const [launcherFocus, setLauncherFocus] = useState(0);
   const pillRef = useRef<HTMLDivElement>(null);
   const time = useClock();
 
@@ -55,6 +61,27 @@ export function IslandApp() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [expanded]);
+
+  // Le raccourci global (Alt+Space) affiche l'Island sur le lanceur, prête à recevoir la frappe.
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    let active = true;
+    listen("launcher-hotkey", () => {
+      setVisible(true);
+      setExpanded(true);
+      setTab("launcher");
+      setLauncherFocus((token) => token + 1);
+    })
+      .then((fn) => {
+        if (active) unlisten = fn;
+        else fn();
+      })
+      .catch((reason: unknown) => console.error("launcher-hotkey listener failed", reason));
+    return () => {
+      active = false;
+      unlisten?.();
+    };
+  }, []);
 
   // Survoler la barre cachée en haut fait réapparaître l'Island, déployée.
   const reveal = () => {
@@ -111,7 +138,12 @@ export function IslandApp() {
                   <X size={16} />
                 </button>
               </div>
-              {tab === "controls" ? <ControlsTab /> : <DashboardTab />}
+              {tab === "controls" && <ControlsTab />}
+              {tab === "dashboard" && <DashboardTab />}
+              {tab === "clipboard" && <ClipboardTab />}
+              {tab === "launcher" && (
+                <LauncherTab focusToken={launcherFocus} onDone={() => setExpanded(false)} />
+              )}
             </motion.div>
           )}
           {visible && !expanded && (
