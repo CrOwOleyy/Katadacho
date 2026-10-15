@@ -111,7 +111,7 @@ pub fn start(app: AppHandle) {
 }
 
 #[tauri::command]
-pub fn timer_get(app: AppHandle, state: State<'_, TimerState>) -> Snapshot {
+pub fn timer_get(state: State<'_, TimerState>) -> Snapshot {
     let machine = state.machine.lock().unwrap_or_else(|e| e.into_inner());
     machine.snapshot(Instant::now())
 }
