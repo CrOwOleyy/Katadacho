@@ -54,3 +54,54 @@ pub fn search(
         })
         .collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use nucleo_matcher::Config;
+
+    fn entry(name: &str, kind: EntryKind) -> LauncherEntry {
+        LauncherEntry {
+            name: name.to_string(),
+            path: format!("C:/{name}"),
+            kind,
+        }
+    }
+
+    fn sample() -> Vec<LauncherEntry> {
+        vec![
+            entry("Visual Studio Code", EntryKind::App),
+            entry("Spotify", EntryKind::Uwp),
+            entry("Notes vacances.txt", EntryKind::File),
+            entry("Documents", EntryKind::Folder),
+        ]
+    }
+
+    #[test]
+    fn finds_application_by_abbreviation() {
+        let mut matcher = Matcher::new(Config::DEFAULT);
+        let results = search(&sample(), &mut matcher, "vsc", 10);
+        assert_eq!(results.first().map(|r| r.name.as_str()), Some("Visual Studio Code"));
+    }
+
+    #[test]
+    fn single_letter_returns_only_applications() {
+        let mut matcher = Matcher::new(Config::DEFAULT);
+        let results = search(&sample(), &mut matcher, "s", 10);
+        assert!(results.iter().all(|r| matches!(r.kind, EntryKind::App | EntryKind::Uwp)));
+    }
+
+    #[test]
+    fn empty_query_returns_nothing() {
+        let mut matcher = Matcher::new(Config::DEFAULT);
+        assert!(search(&sample(), &mut matcher, "  ", 10).is_empty());
+    }
+
+    #[test]
+    fn applications_rank_before_files_on_equal_match() {
+        let mut matcher = Matcher::new(Config::DEFAULT);
+        let entries = vec![entry("notes", EntryKind::File), entry("notes", EntryKind::App)];
+        let results = search(&entries, &mut matcher, "notes", 10);
+        assert_eq!(results.first().map(|r| r.kind), Some(EntryKind::App));
+    }
+}
