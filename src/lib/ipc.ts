@@ -3,7 +3,7 @@ import type { AudioState, IslandBounds, NetworkBluetoothState } from "./types/co
 import type { SpeedtestEvent } from "./types/speedtest";
 import type { ClipboardFilter, ClipboardItem } from "./types/clipboard";
 import type { LauncherResult } from "./types/launcher";
-import type { MediaInfo } from "./types/media";
+import type { MediaInfo, MediaPosition } from "./types/media";
 import type { Settings } from "./types/settings";
 
 export const ipc = {
@@ -40,6 +40,11 @@ export const ipc = {
   getLauncherIcon: (path: string) => invoke<string>("get_launcher_icon", { path }),
 
   getMediaState: () => invoke<MediaInfo | null>("get_media_state"),
+  mediaTogglePlayPause: () => invoke<void>("media_toggle_play_pause"),
+  mediaNext: () => invoke<void>("media_next"),
+  mediaPrevious: () => invoke<void>("media_previous"),
+  mediaSeek: (seconds: number) => invoke<void>("media_seek", { seconds }),
+  mediaPosition: () => invoke<MediaPosition | null>("media_position"),
   startAudioLevels: () => invoke<void>("start_audio_levels"),
   stopAudioLevels: () => invoke<void>("stop_audio_levels"),
 
