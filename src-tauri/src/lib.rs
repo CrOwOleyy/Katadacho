@@ -3,6 +3,7 @@ mod controls;
 mod db;
 mod launcher;
 mod media;
+mod settings;
 mod state;
 mod speedtest;
 mod telemetry;
@@ -24,7 +25,9 @@ pub fn run() {
         .manage(media::MediaState::default())
         .setup(|app| {
             let data_dir = app.path().local_data_dir()?.join("Katadacho");
-            app.manage(db::Database::open(&data_dir)?);
+            let database = db::Database::open(&data_dir)?;
+            app.manage(settings::SettingsState(std::sync::RwLock::new(settings::load(&database))));
+            app.manage(database);
             app.manage(state::AppPaths { data_dir });
             window::position_island(app)?;
             if let Some(island) = app.get_webview_window(window::ISLAND_LABEL) {
@@ -65,6 +68,8 @@ pub fn run() {
             media::get_media_state,
             media::levels::start_audio_levels,
             media::levels::stop_audio_levels,
+            settings::get_settings,
+            settings::save_settings,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
