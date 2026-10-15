@@ -1,4 +1,5 @@
 pub mod commands;
+pub mod hotkey;
 pub mod icons;
 pub mod model;
 pub mod search;

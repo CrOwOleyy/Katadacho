@@ -32,6 +32,7 @@ pub fn run() {
             clipboard::listener::start(app.handle().clone());
             clipboard::foreground::start();
             launcher::start_indexing(app.handle().clone());
+            launcher::hotkey::register(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
