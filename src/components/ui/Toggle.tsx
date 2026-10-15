@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { springSpring } from "../../lib/motion";
+import { useMotionConfig } from "../../hooks/useMotion";
 
 interface ToggleProps {
   checked: boolean | null;
@@ -9,6 +9,7 @@ interface ToggleProps {
 }
 
 export function Toggle({ checked, disabled = false, label, onChange }: ToggleProps) {
+  const { spring } = useMotionConfig();
   const unavailable = checked === null;
   const isOn = checked === true;
 
@@ -26,7 +27,7 @@ export function Toggle({ checked, disabled = false, label, onChange }: TogglePro
     >
       <motion.span
         animate={{ x: isOn ? 20 : 0 }}
-        transition={springSpring}
+        transition={spring}
         className="h-5 w-5 rounded-full bg-white shadow"
       />
     </button>
