@@ -1,4 +1,5 @@
 mod controls;
+mod telemetry;
 mod window;
 
 use tauri::Manager;
@@ -32,6 +33,9 @@ pub fn run() {
             controls::get_network_bt_state,
             controls::toggle_wifi,
             controls::toggle_bluetooth,
+            telemetry::start_system_stats,
+            telemetry::stop_system_stats,
+            telemetry::kill_process,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
