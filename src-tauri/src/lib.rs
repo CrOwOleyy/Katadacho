@@ -4,6 +4,7 @@ mod db;
 mod launcher;
 mod media;
 mod settings;
+mod sound;
 mod state;
 mod speedtest;
 mod telemetry;
