@@ -4,6 +4,7 @@ import type { SpeedtestEvent } from "./types/speedtest";
 import type { ClipboardFilter, ClipboardItem } from "./types/clipboard";
 import type { LauncherResult } from "./types/launcher";
 import type { MediaInfo, MediaPosition } from "./types/media";
+import type { CleanResult } from "./types/memory";
 import type { Settings } from "./types/settings";
 import type { TimerSnapshot } from "./types/timer";
 import type { NotificationAccess } from "./types/notifications";
@@ -23,6 +24,9 @@ export const ipc = {
   getNetworkBtState: () => invoke<NetworkBluetoothState>("get_network_bt_state"),
   toggleWifi: (enable: boolean) => invoke<void>("toggle_wifi", { enable }),
   toggleBluetooth: (enable: boolean) => invoke<void>("toggle_bluetooth", { enable }),
+
+  cleanMemoryQuick: () => invoke<CleanResult>("clean_memory_quick"),
+  cleanMemoryDeep: () => invoke<CleanResult>("clean_memory_deep"),
 
   startSystemStats: () => invoke<void>("start_system_stats"),
   stopSystemStats: () => invoke<void>("stop_system_stats"),
