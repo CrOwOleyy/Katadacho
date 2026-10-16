@@ -1,4 +1,6 @@
 //! Outils communs pour les fonctionnalités qui n'existent pas encore sur tous les systèmes.
+// Sous Windows tout est implémenté : ces outils ne servent qu'aux autres systèmes.
+#![cfg_attr(windows, allow(dead_code))]
 
 /// Nom lisible du système courant.
 pub fn os_name() -> &'static str {
