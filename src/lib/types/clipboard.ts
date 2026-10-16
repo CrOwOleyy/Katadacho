@@ -10,5 +10,6 @@ export interface ClipboardItem {
   thumbnailBase64: string | null;
   sourceAppName: string | null;
   isPinned: boolean;
+  isSensitive: boolean;
   createdAt: number;
 }
