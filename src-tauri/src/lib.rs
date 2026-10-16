@@ -45,9 +45,7 @@ pub fn run() {
                 island.set_ignore_cursor_events(true)?;
             }
             click_through::start(app.handle().clone());
-            clipboard::listener::start(app.handle().clone());
-            clipboard::foreground::start();
-            clipboard::start_secret_cleanup(app.handle().clone());
+            clipboard::start(app.handle().clone());
             launcher::start_indexing(app.handle().clone());
             let launcher_hotkey = app.state::<settings::SettingsState>().snapshot().hotkeys.launcher;
             launcher::hotkey::apply(app.handle(), &launcher_hotkey);
