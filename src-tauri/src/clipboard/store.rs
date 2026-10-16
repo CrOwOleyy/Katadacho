@@ -16,6 +16,8 @@ pub struct ClipboardItem {
     pub thumbnail_base64: Option<String>,
     pub source_app_name: Option<String>,
     pub is_pinned: bool,
+    /// Ressemble à un secret : affiché masqué et effacé automatiquement.
+    pub is_sensitive: bool,
     pub created_at: i64,
 }
 
@@ -25,10 +27,11 @@ pub struct NewItem<'a> {
     pub image_path: Option<&'a str>,
     pub source_app_name: Option<&'a str>,
     pub content_hash: &'a str,
+    pub is_sensitive: bool,
 }
 
 const COLUMNS: &str =
-    "id, content_type, text_content, image_path, source_app_name, is_pinned, created_at";
+    "id, content_type, text_content, image_path, source_app_name, is_pinned, created_at, is_sensitive";
 
 fn now_ms() -> i64 {
     SystemTime::now()
@@ -47,6 +50,7 @@ fn row_to_item(row: &Row) -> rusqlite::Result<ClipboardItem> {
         source_app_name: row.get(4)?,
         is_pinned: row.get::<_, i64>(5)? != 0,
         created_at: row.get(6)?,
+        is_sensitive: row.get::<_, i64>(7)? != 0,
     })
 }
 
@@ -74,22 +78,23 @@ pub fn insert_or_bump(db: &Database, item: &NewItem) -> Result<ClipboardItem, St
         let id = match existing {
             Some(id) => {
                 conn.execute(
-                    "UPDATE clipboard_items SET created_at = ?1, source_app_name = COALESCE(?2, source_app_name) WHERE id = ?3",
-                    params![now_ms(), item.source_app_name, id],
+                    "UPDATE clipboard_items SET created_at = ?1, source_app_name = COALESCE(?2, source_app_name), is_sensitive = ?4 WHERE id = ?3",
+                    params![now_ms(), item.source_app_name, id, item.is_sensitive],
                 )?;
                 id
             }
             None => {
                 conn.execute(
-                    "INSERT INTO clipboard_items (content_type, text_content, image_path, source_app_name, is_pinned, created_at, content_hash)
-                     VALUES (?1, ?2, ?3, ?4, 0, ?5, ?6)",
+                    "INSERT INTO clipboard_items (content_type, text_content, image_path, source_app_name, is_pinned, created_at, content_hash, is_sensitive)
+                     VALUES (?1, ?2, ?3, ?4, 0, ?5, ?6, ?7)",
                     params![
                         item.content_type,
                         item.text_content,
                         item.image_path,
                         item.source_app_name,
                         now_ms(),
-                        item.content_hash
+                        item.content_hash,
+                        item.is_sensitive
                     ],
                 )?;
                 conn.last_insert_rowid()
@@ -176,5 +181,15 @@ pub fn delete(db: &Database, id: i64) -> Result<Option<String>, String> {
             .flatten();
         conn.execute("DELETE FROM clipboard_items WHERE id = ?1", params![id])?;
         Ok(image_path)
+    })
+}
+
+/// Efface les secrets non épinglés copiés avant `cutoff_ms`. Retourne le nombre d'éléments effacés.
+pub fn delete_expired_sensitive(db: &Database, cutoff_ms: i64) -> Result<usize, String> {
+    db.with(|conn| {
+        conn.execute(
+            "DELETE FROM clipboard_items WHERE is_sensitive = 1 AND is_pinned = 0 AND created_at < ?1",
+            params![cutoff_ms],
+        )
     })
 }
