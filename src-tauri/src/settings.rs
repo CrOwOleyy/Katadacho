@@ -125,9 +125,25 @@ impl Default for ClipboardSettings {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase", default)]
+pub struct HotkeySettings {
+    /// Raccourci du lanceur : `copilot`, `alt+space`, `ctrl+alt+space` ou `ctrl+shift+space`.
+    pub launcher: String,
+}
+
+impl Default for HotkeySettings {
+    fn default() -> Self {
+        Self {
+            launcher: crate::launcher::hotkey::DEFAULT_CHOICE.to_string(),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(rename_all = "camelCase", default)]
 pub struct Settings {
+    pub hotkeys: HotkeySettings,
     pub animations: AnimationSettings,
     pub island: IslandSettings,
     pub timer: TimerSettings,
@@ -157,6 +173,10 @@ impl Settings {
         n.blocked_apps.retain(|name| !name.trim().is_empty());
 
         self.clipboard.secret_ttl_minutes = self.clipboard.secret_ttl_minutes.clamp(1, 1440);
+
+        if !crate::launcher::hotkey::CHOICES.contains(&self.hotkeys.launcher.as_str()) {
+            self.hotkeys.launcher = crate::launcher::hotkey::DEFAULT_CHOICE.to_string();
+        }
         self
     }
 }
@@ -207,7 +227,11 @@ pub fn save_settings(
         )
     })?;
 
+    let previous_hotkey = state.snapshot().hotkeys.launcher;
     *state.0.write().unwrap_or_else(|e| e.into_inner()) = settings.clone();
+    if previous_hotkey != settings.hotkeys.launcher {
+        crate::launcher::hotkey::apply(&app, &settings.hotkeys.launcher);
+    }
     let _ = app.emit(EVENT_SETTINGS_CHANGED, settings.clone());
     Ok(settings)
 }
@@ -248,5 +272,24 @@ mod tests {
         assert_eq!(clean.timer.focus_minutes, 1);
         assert_eq!(clean.notifications.display_seconds, 2);
         assert_eq!(clean.notifications.blocked_apps, vec!["Discord".to_string()]);
+    }
+}
+
+#[cfg(test)]
+mod hotkey_tests {
+    use super::*;
+
+    #[test]
+    fn unknown_launcher_hotkey_falls_back_to_default() {
+        let mut settings = Settings::default();
+        settings.hotkeys.launcher = "ctrl+f13".into();
+        assert_eq!(settings.sanitized().hotkeys.launcher, crate::launcher::hotkey::DEFAULT_CHOICE);
+    }
+
+    #[test]
+    fn copilot_key_is_a_valid_choice() {
+        let mut settings = Settings::default();
+        settings.hotkeys.launcher = "copilot".into();
+        assert_eq!(settings.sanitized().hotkeys.launcher, "copilot");
     }
 }
