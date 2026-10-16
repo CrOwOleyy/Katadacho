@@ -8,6 +8,7 @@ import type { CleanResult } from "./types/memory";
 import type { Settings } from "./types/settings";
 import type { TimerSnapshot } from "./types/timer";
 import type { NotificationAccess } from "./types/notifications";
+import type { HotkeyStatus } from "./types/hotkeys";
 
 export const ipc = {
   updateIslandBounds: (bounds: IslandBounds) => invoke<void>("update_island_bounds", { bounds }),
@@ -44,6 +45,7 @@ export const ipc = {
   openItemLocation: (path: string) => invoke<void>("open_item_location", { path }),
   reindexLauncher: () => invoke<void>("reindex_launcher"),
   getLauncherIcon: (path: string) => invoke<string>("get_launcher_icon", { path }),
+  getHotkeyStatus: () => invoke<HotkeyStatus>("get_hotkey_status"),
 
   getMediaState: () => invoke<MediaInfo | null>("get_media_state"),
   mediaTogglePlayPause: () => invoke<void>("media_toggle_play_pause"),
