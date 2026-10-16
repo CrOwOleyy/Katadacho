@@ -3,6 +3,7 @@ mod controls;
 mod db;
 mod launcher;
 mod media;
+pub mod memory;
 mod notifications;
 mod settings;
 mod sound;
@@ -82,6 +83,8 @@ pub fn run() {
             settings::get_settings,
             settings::save_settings,
             settings::reset_settings,
+            memory::clean_memory_quick,
+            memory::clean_memory_deep,
             timer::timer_get,
             timer::timer_start_pomodoro,
             timer::timer_start_countdown,
