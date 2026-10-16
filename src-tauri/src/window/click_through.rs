@@ -4,8 +4,6 @@ use std::time::Duration;
 
 use serde::Deserialize;
 use tauri::{AppHandle, Manager, State, WebviewWindow};
-use windows::Win32::Foundation::POINT;
-use windows::Win32::UI::WindowsAndMessaging::GetCursorPos;
 
 use super::ISLAND_LABEL;
 
@@ -72,10 +70,10 @@ pub fn start(app: AppHandle) {
 
 /// Retourne (curseur dans la pilule avec marge, curseur proche de la pilule).
 fn cursor_relation(window: &WebviewWindow, bounds: IslandBounds) -> (bool, bool) {
-    let mut point = POINT::default();
-    if unsafe { GetCursorPos(&mut point) }.is_err() {
+    // Position du curseur en pixels physiques de l'écran, fournie par Tauri sur tous les systèmes.
+    let Ok(point) = window.cursor_position() else {
         return (false, false);
-    }
+    };
 
     let Ok(origin) = window.outer_position() else {
         return (false, false);
@@ -87,8 +85,8 @@ fn cursor_relation(window: &WebviewWindow, bounds: IslandBounds) -> (bool, bool)
     let right = left + bounds.width * scale;
     let bottom = top + bounds.height * scale;
 
-    let cx = point.x as f64;
-    let cy = point.y as f64;
+    let cx = point.x;
+    let cy = point.y;
 
     let inside = cx >= left - HOVER_MARGIN_PX
         && cx <= right + HOVER_MARGIN_PX
