@@ -76,7 +76,7 @@ unsafe extern "system" fn window_proc(window: HWND, message: u32, wparam: WPARAM
         let sequence = unsafe { GetClipboardSequenceNumber() };
         if LAST_SEQUENCE.swap(sequence, Ordering::SeqCst) != sequence {
             if let Some(app) = APP.get() {
-                super::capture(app, window);
+                super::capture::capture(app, window);
             }
         }
         return LRESULT(0);
