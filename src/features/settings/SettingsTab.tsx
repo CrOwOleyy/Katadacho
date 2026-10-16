@@ -1,4 +1,4 @@
-import { Bell, Gauge, PanelTop, RotateCcw, Timer } from "lucide-react";
+import { Bell, Gauge, Lock, PanelTop, RotateCcw, Timer } from "lucide-react";
 import { BentoCard } from "../../components/ui/BentoCard";
 import { Toggle } from "../../components/ui/Toggle";
 import { useSettings } from "../../store/SettingsContext";
@@ -89,6 +89,28 @@ export function SettingsTab() {
                 onChange={(showMediaInPill) => update((s) => ({ ...s, island: { ...s.island, showMediaInPill } }))}
               />
             </SettingRow>
+          </BentoCard>
+
+          <BentoCard title="Presse-papier" icon={<Lock size={14} />}>
+            <p className="text-[11px] leading-snug text-white/45">
+              Les copies faites depuis un gestionnaire de mots de passe ne sont jamais enregistrées.
+            </p>
+            <SettingRow label="Détecter les secrets" description="Clés d'API, jetons, mots de passe copiés à la main.">
+              <Toggle
+                label="Détecter les secrets"
+                checked={settings.clipboard.detectSecrets}
+                onChange={(detectSecrets) => update((s) => ({ ...s, clipboard: { ...s.clipboard, detectSecrets } }))}
+              />
+            </SettingRow>
+            <SettingSlider
+              label="Effacer les secrets après"
+              description="Masqués dans la liste, puis supprimés. Épingler les conserve."
+              value={settings.clipboard.secretTtlMinutes}
+              min={1}
+              max={60}
+              format={minutes}
+              onChange={(secretTtlMinutes) => update((s) => ({ ...s, clipboard: { ...s.clipboard, secretTtlMinutes } }))}
+            />
           </BentoCard>
         </div>
 
