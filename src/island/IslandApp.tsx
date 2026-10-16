@@ -159,6 +159,28 @@ export function IslandApp() {
     };
   }, []);
 
+  // L'icône de la zone de notification ouvre l'Island, éventuellement sur un onglet précis.
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    let active = true;
+    listen<string | null>("island-open", (event) => {
+      clearHoverTimer();
+      setVisible(true);
+      setExpanded(true);
+      const requested = TABS.find((item) => item.id === event.payload);
+      if (requested) setTab(requested.id);
+    })
+      .then((fn) => {
+        if (active) unlisten = fn;
+        else fn();
+      })
+      .catch((reason: unknown) => console.error("island-open listener failed", reason));
+    return () => {
+      active = false;
+      unlisten?.();
+    };
+  }, []);
+
   useEffect(() => clearHoverTimer, []);
 
   const handleEnter = () => {
