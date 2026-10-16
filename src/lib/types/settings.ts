@@ -28,9 +28,15 @@ export interface NotificationSettings {
   blockedApps: string[];
 }
 
+export interface ClipboardSettings {
+  detectSecrets: boolean;
+  secretTtlMinutes: number;
+}
+
 export interface Settings {
   animations: AnimationSettings;
   island: IslandSettings;
   timer: TimerSettings;
   notifications: NotificationSettings;
+  clipboard: ClipboardSettings;
 }
