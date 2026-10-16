@@ -16,6 +16,7 @@ pnpm install --frozen-lockfile
 
 case "$mode" in
     check)
+        pnpm build
         cd src-tauri && cargo check --locked
         ;;
     bundle)
