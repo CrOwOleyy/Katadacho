@@ -1,4 +1,4 @@
-use serde::Serialize;
+use super::types::{AudioDevice, AudioState};
 use windows::core::{Result as WinResult, PWSTR};
 use windows::Win32::Devices::FunctionDiscovery::PKEY_Device_FriendlyName;
 use windows::Win32::Media::Audio::Endpoints::IAudioEndpointVolume;
@@ -11,23 +11,6 @@ use windows::Win32::System::Com::{
 };
 use windows::Win32::System::Com::StructuredStorage::PropVariantToStringAlloc;
 use windows::Win32::UI::Shell::PropertiesSystem::IPropertyStore;
-
-#[derive(Serialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct AudioDevice {
-    pub id: String,
-    pub name: String,
-    pub is_default: bool,
-}
-
-#[derive(Serialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct AudioState {
-    pub volume: u8,
-    pub muted: bool,
-    pub active_device: Option<AudioDevice>,
-    pub devices: Vec<AudioDevice>,
-}
 
 fn enumerator() -> WinResult<IMMDeviceEnumerator> {
     unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) }
