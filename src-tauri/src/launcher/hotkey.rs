@@ -7,7 +7,6 @@ use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
-use super::copilot;
 use crate::window::ISLAND_LABEL;
 
 pub const EVENT_LAUNCHER_HOTKEY: &str = "launcher-hotkey";
@@ -49,13 +48,11 @@ pub fn apply(app: &AppHandle, choice: &str) {
     if let Some(previous) = state.registered.lock().unwrap_or_else(|e| e.into_inner()).take() {
         let _ = app.global_shortcut().unregister(previous.as_str());
     }
-    copilot::set_enabled(false);
+    #[cfg(windows)]
+    super::copilot::set_enabled(false);
 
     let status = if choice == "copilot" {
-        let handle = app.clone();
-        copilot::start(move || activate(&handle));
-        copilot::set_enabled(true);
-        HotkeyStatus { choice: choice.to_string(), active: true, error: None }
+        enable_copilot_key(app)
     } else if CHOICES.contains(&choice) {
         let handle = app.clone();
         let result = app.global_shortcut().on_shortcut(choice, move |_app, _shortcut, event| {
@@ -89,4 +86,22 @@ pub fn apply(app: &AppHandle, choice: &str) {
 #[tauri::command]
 pub fn get_hotkey_status(state: State<'_, HotkeyState>) -> HotkeyStatus {
     state.status.lock().unwrap_or_else(|e| e.into_inner()).clone()
+}
+
+/// La touche Copilot passe par un crochet clavier Windows.
+#[cfg(windows)]
+fn enable_copilot_key(app: &AppHandle) -> HotkeyStatus {
+    let handle = app.clone();
+    super::copilot::start(move || activate(&handle));
+    super::copilot::set_enabled(true);
+    HotkeyStatus { choice: "copilot".to_string(), active: true, error: None }
+}
+
+#[cfg(not(windows))]
+fn enable_copilot_key(_app: &AppHandle) -> HotkeyStatus {
+    HotkeyStatus {
+        choice: "copilot".to_string(),
+        active: false,
+        error: Some("La touche Copilot n'existe que sous Windows".to_string()),
+    }
 }
