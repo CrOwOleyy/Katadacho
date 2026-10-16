@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
+import type { GhostMood } from "../../components/mascot/mood";
 import { ipc } from "../../lib/ipc";
 import type { AudioState, NetworkBluetoothState } from "../../lib/types/controls";
 import { BluetoothCard } from "./BluetoothCard";
 import { BrightnessCard } from "./BrightnessCard";
+import { MascotCard } from "./MascotCard";
 import { MediaCard } from "./MediaCard";
 import { VolumeCard } from "./VolumeCard";
 import { WifiCard } from "./WifiCard";
@@ -16,7 +18,7 @@ const cache: {
   brightness: number | null;
 } = { audio: null, network: null, brightness: null };
 
-export function ControlsTab() {
+export function ControlsTab({ mood }: { mood: GhostMood }) {
   const [audio, setAudio] = useState<AudioState | null>(cache.audio);
   const [network, setNetwork] = useState<NetworkBluetoothState | null>(cache.network);
   const [brightness, setBrightness] = useState<number | null>(cache.brightness);
@@ -73,6 +75,7 @@ export function ControlsTab() {
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-6 gap-3">
         <MediaCard />
+        <MascotCard mood={mood} />
         <WifiCard
           state={network}
           onToggle={(enable) => void run(() => ipc.toggleWifi(enable))}

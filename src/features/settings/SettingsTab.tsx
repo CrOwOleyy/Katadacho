@@ -2,6 +2,7 @@ import { Bell, Gauge, PanelTop, RotateCcw, Timer } from "lucide-react";
 import { BentoCard } from "../../components/ui/BentoCard";
 import { Toggle } from "../../components/ui/Toggle";
 import { useSettings } from "../../store/SettingsContext";
+import { AutostartToggle } from "./AutostartToggle";
 import { BlockedApps } from "./BlockedApps";
 import { NotificationAccess } from "./NotificationAccess";
 import { SettingRow } from "./SettingRow";
@@ -70,6 +71,7 @@ export function SettingsTab() {
           </BentoCard>
 
           <BentoCard title="Island" icon={<PanelTop size={14} />}>
+            <AutostartToggle />
             <SettingSlider
               label="Disparition automatique"
               description="Délai avant que l'Island se cache. 0 = jamais."

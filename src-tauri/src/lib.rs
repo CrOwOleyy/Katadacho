@@ -3,6 +3,7 @@ mod controls;
 mod db;
 mod launcher;
 mod media;
+pub mod memory;
 mod notifications;
 mod settings;
 mod sound;
@@ -10,6 +11,7 @@ mod state;
 mod speedtest;
 mod telemetry;
 mod timer;
+mod tray;
 mod window;
 
 use tauri::Manager;
@@ -33,6 +35,7 @@ pub fn run() {
             app.manage(settings::SettingsState(std::sync::RwLock::new(settings::load(&database))));
             app.manage(database);
             app.manage(state::AppPaths { data_dir });
+            tray::create(app)?;
             window::position_island(app)?;
             if let Some(island) = app.get_webview_window(window::ISLAND_LABEL) {
                 island.set_ignore_cursor_events(true)?;
@@ -82,6 +85,8 @@ pub fn run() {
             settings::get_settings,
             settings::save_settings,
             settings::reset_settings,
+            memory::clean_memory_quick,
+            memory::clean_memory_deep,
             timer::timer_get,
             timer::timer_start_pomodoro,
             timer::timer_start_countdown,

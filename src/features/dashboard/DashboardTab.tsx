@@ -4,6 +4,7 @@ import { Sparkline } from "../../components/ui/Sparkline";
 import { useSystemStats } from "../../hooks/useSystemStats";
 import { ipc } from "../../lib/ipc";
 import { Activity } from "lucide-react";
+import { MemoryCleaner } from "./MemoryCleaner";
 import { ProcessList } from "./ProcessList";
 import { SpeedtestWidget } from "./SpeedtestWidget";
 
@@ -57,6 +58,8 @@ export function DashboardTab() {
         <Sparkline values={history.gpu} />
         <Sparkline values={history.disk} />
       </div>
+
+      <MemoryCleaner />
 
       <div className="grid grid-cols-12 gap-3">
         <BentoCard title="Réseau" icon={<Activity size={14} />} className="col-span-3">

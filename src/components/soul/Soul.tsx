@@ -1,51 +1,17 @@
-import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { Ghost } from "../mascot/Ghost";
+import type { GhostMood } from "../mascot/mood";
+import { useSettings } from "../../store/SettingsContext";
 
-const BLINK_MIN_MS = 2500;
-const BLINK_MAX_MS = 6000;
-const BLINK_DURATION_MS = 140;
+interface SoulProps {
+  /** Hauteur du fantôme en pixels. */
+  size?: number;
+  mood?: GhostMood;
+}
 
-/** Orbe "Soul" : deux yeux qui clignent à intervalle aléatoire. */
-export function Soul({ size = 22 }: { size?: number }) {
-  const [blinking, setBlinking] = useState(false);
+/** La « Soul » de l'Island : la mascotte, animée selon les réglages d'animation. */
+export function Soul({ size = 30, mood = "idle" }: SoulProps) {
+  const { settings } = useSettings();
+  const { enabled, speed } = settings.animations;
 
-  useEffect(() => {
-    let timeout = 0;
-    let closeTimeout = 0;
-
-    const schedule = () => {
-      const delay = BLINK_MIN_MS + Math.random() * (BLINK_MAX_MS - BLINK_MIN_MS);
-      timeout = window.setTimeout(() => {
-        setBlinking(true);
-        closeTimeout = window.setTimeout(() => {
-          setBlinking(false);
-          schedule();
-        }, BLINK_DURATION_MS);
-      }, delay);
-    };
-
-    schedule();
-    return () => {
-      window.clearTimeout(timeout);
-      window.clearTimeout(closeTimeout);
-    };
-  }, []);
-
-  return (
-    <div
-      className="flex items-center justify-center rounded-full bg-[color:var(--accent-color)]/20 ring-1 ring-[color:var(--accent-color)]/40"
-      style={{ width: size, height: size }}
-    >
-      <div className="flex gap-[3px]">
-        {[0, 1].map((eye) => (
-          <motion.span
-            key={eye}
-            animate={{ scaleY: blinking ? 0.1 : 1 }}
-            transition={{ duration: 0.07 }}
-            className="block h-[6px] w-[3px] rounded-full bg-[color:var(--accent-color)]"
-          />
-        ))}
-      </div>
-    </div>
-  );
+  return <Ghost size={size} mood={mood} animated={enabled} speed={speed} />;
 }
