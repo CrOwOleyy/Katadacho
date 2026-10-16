@@ -5,6 +5,7 @@ mod controls;
 mod db;
 mod launcher;
 mod media;
+mod platform;
 pub mod memory;
 mod notifications;
 mod settings;
