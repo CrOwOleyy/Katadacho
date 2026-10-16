@@ -11,6 +11,7 @@ mod state;
 mod speedtest;
 mod telemetry;
 mod timer;
+mod tray;
 mod window;
 
 use tauri::Manager;
@@ -34,6 +35,7 @@ pub fn run() {
             app.manage(settings::SettingsState(std::sync::RwLock::new(settings::load(&database))));
             app.manage(database);
             app.manage(state::AppPaths { data_dir });
+            tray::create(app)?;
             window::position_island(app)?;
             if let Some(island) = app.get_webview_window(window::ISLAND_LABEL) {
                 island.set_ignore_cursor_events(true)?;
