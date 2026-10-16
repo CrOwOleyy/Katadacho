@@ -4,9 +4,10 @@ use std::thread::sleep;
 use std::time::Duration;
 
 use image::RgbaImage;
+use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{HGLOBAL, HWND};
 use windows::Win32::System::DataExchange::{
-    CloseClipboard, GetClipboardData, IsClipboardFormatAvailable, OpenClipboard,
+    CloseClipboard, GetClipboardData, IsClipboardFormatAvailable, OpenClipboard, RegisterClipboardFormatW,
 };
 use windows::Win32::System::Memory::{GlobalLock, GlobalSize, GlobalUnlock};
 use windows::Win32::System::Ole::{CF_DIB, CF_UNICODETEXT};
@@ -46,8 +47,43 @@ impl Drop for ClipboardGuard {
 
 /// Lit le contenu actuel. Le texte est prioritaire sur l'image, car beaucoup d'applications
 /// (tableurs, navigateurs) fournissent les deux formats pour une même copie.
+fn format_available(name: PCWSTR) -> Option<u32> {
+    let format = unsafe { RegisterClipboardFormatW(name) };
+    (format != 0 && unsafe { IsClipboardFormatAvailable(format) }.is_ok()).then_some(format)
+}
+
+/// Vrai si l'application qui a copié demande de ne pas historiser ce contenu. Les gestionnaires
+/// de mots de passe (KeePass, Bitwarden, 1Password…) posent ces marqueurs sur leurs copies.
+fn is_excluded_by_source() -> bool {
+    if format_available(w!("ExcludeClipboardContentFromMonitorProcessing")).is_some()
+        || format_available(w!("Clipboard Viewer Ignore")).is_some()
+    {
+        return true;
+    }
+
+    // « CanIncludeInClipboardHistory » contient un DWORD : 0 signifie « ne pas historiser ».
+    let Some(format) = format_available(w!("CanIncludeInClipboardHistory")) else {
+        return false;
+    };
+    let Ok(handle) = (unsafe { GetClipboardData(format) }) else {
+        return false;
+    };
+    let memory = HGLOBAL(handle.0);
+    let pointer = unsafe { GlobalLock(memory) } as *const u32;
+    if pointer.is_null() {
+        return false;
+    }
+    let allowed = unsafe { GlobalSize(memory) } >= 4 && unsafe { pointer.read_unaligned() } != 0;
+    let _ = unsafe { GlobalUnlock(memory) };
+    !allowed
+}
+
 pub fn read(owner: Option<HWND>) -> Option<ClipboardContent> {
     let _guard = ClipboardGuard::open(owner)?;
+
+    if is_excluded_by_source() {
+        return None;
+    }
 
     if unsafe { IsClipboardFormatAvailable(u32::from(CF_UNICODETEXT.0)) }.is_ok() {
         return read_text().map(ClipboardContent::Text);
