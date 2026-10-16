@@ -33,7 +33,14 @@ export interface ClipboardSettings {
   secretTtlMinutes: number;
 }
 
+export type LauncherHotkey = "copilot" | "alt+space" | "ctrl+alt+space" | "ctrl+shift+space";
+
+export interface HotkeySettings {
+  launcher: LauncherHotkey;
+}
+
 export interface Settings {
+  hotkeys: HotkeySettings;
   animations: AnimationSettings;
   island: IslandSettings;
   timer: TimerSettings;
