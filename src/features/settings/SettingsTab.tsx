@@ -4,6 +4,7 @@ import { Toggle } from "../../components/ui/Toggle";
 import { useSettings } from "../../store/SettingsContext";
 import { AutostartToggle } from "./AutostartToggle";
 import { BlockedApps } from "./BlockedApps";
+import { HotkeySetting } from "./HotkeySetting";
 import { NotificationAccess } from "./NotificationAccess";
 import { SettingRow } from "./SettingRow";
 import { SettingSlider } from "./SettingSlider";
@@ -72,6 +73,7 @@ export function SettingsTab() {
 
           <BentoCard title="Island" icon={<PanelTop size={14} />}>
             <AutostartToggle />
+            <HotkeySetting />
             <SettingSlider
               label="Disparition automatique"
               description="Délai avant que l'Island se cache. 0 = jamais."
