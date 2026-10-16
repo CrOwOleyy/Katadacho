@@ -20,6 +20,7 @@ const MIGRATIONS: &[&str] = &[
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL
     );",
+    "ALTER TABLE clipboard_items ADD COLUMN is_sensitive INTEGER NOT NULL DEFAULT 0;",
 ];
 
 pub fn run(connection: &Connection) -> rusqlite::Result<()> {
@@ -32,4 +33,29 @@ pub fn run(connection: &Connection) -> rusqlite::Result<()> {
         transaction.commit()?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn migrations_apply_once_and_are_idempotent() {
+        let connection = Connection::open_in_memory().unwrap();
+        run(&connection).unwrap();
+        // Une seconde exécution ne doit rien rejouer.
+        run(&connection).unwrap();
+
+        let version: i64 = connection.query_row("PRAGMA user_version", [], |row| row.get(0)).unwrap();
+        assert_eq!(version, MIGRATIONS.len() as i64);
+
+        let has_sensitive: i64 = connection
+            .query_row(
+                "SELECT COUNT(*) FROM pragma_table_info('clipboard_items') WHERE name = 'is_sensitive'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(has_sensitive, 1);
+    }
 }
