@@ -1,4 +1,6 @@
 mod clipboard;
+#[cfg(windows)]
+mod com;
 mod controls;
 mod db;
 mod launcher;

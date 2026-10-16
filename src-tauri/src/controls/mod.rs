@@ -5,7 +5,8 @@ pub mod radios;
 pub mod wifi;
 pub mod policy_config;
 
-use audio::{AudioState, ComGuard};
+use crate::com::ComGuard;
+use audio::AudioState;
 use serde::Serialize;
 use windows::Devices::Radios::RadioKind;
 

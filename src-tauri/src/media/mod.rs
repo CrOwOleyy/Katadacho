@@ -16,7 +16,7 @@ use windows::Media::Control::{
 };
 use windows::Storage::Streams::DataReader;
 
-use crate::controls::audio::ComGuard;
+use crate::com::ComGuard;
 
 pub mod controls;
 pub mod levels;

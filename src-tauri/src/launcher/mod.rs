@@ -16,7 +16,7 @@ use std::thread;
 use nucleo_matcher::{Config, Matcher};
 use tauri::{AppHandle, Manager};
 
-use crate::controls::audio::ComGuard;
+use crate::com::ComGuard;
 use model::{EntryKind, LauncherEntry, LauncherResult};
 
 const RESULT_LIMIT: usize = 30;

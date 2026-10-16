@@ -7,7 +7,7 @@ use windows::Media::Control::{
     GlobalSystemMediaTransportControlsSessionPlaybackStatus,
 };
 
-use crate::controls::audio::ComGuard;
+use crate::com::ComGuard;
 
 /// Un TimeSpan Windows compte des intervalles de 100 nanosecondes.
 const TICKS_PER_SECOND: f64 = 10_000_000.0;

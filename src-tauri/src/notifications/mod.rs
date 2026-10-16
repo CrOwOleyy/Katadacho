@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use tauri::{AppHandle, Emitter, Manager};
 
-use crate::controls::audio::ComGuard;
+use crate::com::ComGuard;
 use crate::settings::{NotificationSettings, SettingsState};
 use listener::{Access, Toast};
 

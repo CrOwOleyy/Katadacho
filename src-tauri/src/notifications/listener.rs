@@ -113,7 +113,7 @@ pub fn fetch_toasts() -> Result<Vec<Toast>, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::controls::audio::ComGuard;
+    use crate::com::ComGuard;
 
     /// Test manuel : poste d'abord un toast (par exemple avec PowerShell), puis lance
     /// `cargo test --lib notifications -- --ignored --nocapture`.

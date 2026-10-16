@@ -10,7 +10,7 @@ use windows::Win32::Media::Audio::Endpoints::IAudioMeterInformation;
 use windows::Win32::Media::Audio::{eConsole, eRender, IMMDeviceEnumerator, MMDeviceEnumerator};
 use windows::Win32::System::Com::{CoCreateInstance, CLSCTX_ALL};
 
-use crate::controls::audio::ComGuard;
+use crate::com::ComGuard;
 
 pub const EVENT_AUDIO_LEVEL: &str = "audio-level";
 const TICK: Duration = Duration::from_millis(33);

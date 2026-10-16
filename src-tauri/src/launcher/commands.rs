@@ -8,7 +8,7 @@ use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
 
 use super::model::LauncherResult;
 use super::{icons, reindex, Launcher};
-use crate::controls::audio::ComGuard;
+use crate::com::ComGuard;
 use crate::state::AppPaths;
 
 /// ShellExecuteW renvoie une valeur supérieure à 32 en cas de succès.
