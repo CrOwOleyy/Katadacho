@@ -1,15 +1,37 @@
 //! Raccourci global qui ouvre le lanceur depuis n'importe quelle application.
+//! Le choix vient des réglages : touche Copilot, ou une combinaison classique.
 
-use tauri::{AppHandle, Emitter, Manager};
+use std::sync::Mutex;
+
+use serde::Serialize;
+use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
+use super::copilot;
 use crate::window::ISLAND_LABEL;
 
 pub const EVENT_LAUNCHER_HOTKEY: &str = "launcher-hotkey";
+pub const EVENT_HOTKEY_STATUS: &str = "hotkey-status";
 
-/// Alt+Space est souvent déjà pris (menu système des fenêtres, PowerToys Run). On essaie donc
-/// des alternatives dans l'ordre jusqu'à en trouver une libre.
-const CANDIDATES: &[&str] = &["alt+space", "ctrl+alt+space"];
+/// Choix proposés dans les réglages. `copilot` passe par le crochet clavier, les autres par
+/// le plugin de raccourcis globaux.
+pub const CHOICES: &[&str] = &["copilot", "alt+space", "ctrl+alt+space", "ctrl+shift+space"];
+pub const DEFAULT_CHOICE: &str = "alt+space";
+
+#[derive(Serialize, Clone, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct HotkeyStatus {
+    pub choice: String,
+    pub active: bool,
+    pub error: Option<String>,
+}
+
+#[derive(Default)]
+pub struct HotkeyState {
+    /// Combinaison enregistrée auprès du plugin, à libérer avant d'en changer.
+    registered: Mutex<Option<String>>,
+    status: Mutex<HotkeyStatus>,
+}
 
 fn activate(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(ISLAND_LABEL) {
@@ -19,20 +41,52 @@ fn activate(app: &AppHandle) {
     let _ = app.emit(EVENT_LAUNCHER_HOTKEY, ());
 }
 
-/// Enregistre le premier raccourci disponible et retourne son nom, ou `None` si tous sont pris.
-pub fn register(app: &AppHandle) -> Option<&'static str> {
-    for candidate in CANDIDATES {
+/// Active le raccourci choisi et désactive le précédent. L'échec n'empêche pas l'application de
+/// tourner : il est simplement signalé dans les réglages.
+pub fn apply(app: &AppHandle, choice: &str) {
+    let state = app.state::<HotkeyState>();
+
+    if let Some(previous) = state.registered.lock().unwrap_or_else(|e| e.into_inner()).take() {
+        let _ = app.global_shortcut().unregister(previous.as_str());
+    }
+    copilot::set_enabled(false);
+
+    let status = if choice == "copilot" {
         let handle = app.clone();
-        let result = app.global_shortcut().on_shortcut(*candidate, move |_app, _shortcut, event| {
+        copilot::start(move || activate(&handle));
+        copilot::set_enabled(true);
+        HotkeyStatus { choice: choice.to_string(), active: true, error: None }
+    } else if CHOICES.contains(&choice) {
+        let handle = app.clone();
+        let result = app.global_shortcut().on_shortcut(choice, move |_app, _shortcut, event| {
             if event.state == ShortcutState::Pressed {
                 activate(&handle);
             }
         });
-
         match result {
-            Ok(()) => return Some(candidate),
-            Err(error) => eprintln!("launcher hotkey {candidate} unavailable: {error}"),
+            Ok(()) => {
+                *state.registered.lock().unwrap_or_else(|e| e.into_inner()) = Some(choice.to_string());
+                HotkeyStatus { choice: choice.to_string(), active: true, error: None }
+            }
+            Err(_) => HotkeyStatus {
+                choice: choice.to_string(),
+                active: false,
+                error: Some("Ce raccourci est déjà utilisé par une autre application".to_string()),
+            },
         }
-    }
-    None
+    } else {
+        HotkeyStatus {
+            choice: choice.to_string(),
+            active: false,
+            error: Some("Raccourci inconnu".to_string()),
+        }
+    };
+
+    *state.status.lock().unwrap_or_else(|e| e.into_inner()) = status.clone();
+    let _ = app.emit(EVENT_HOTKEY_STATUS, status);
+}
+
+#[tauri::command]
+pub fn get_hotkey_status(state: State<'_, HotkeyState>) -> HotkeyStatus {
+    state.status.lock().unwrap_or_else(|e| e.into_inner()).clone()
 }

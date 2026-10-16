@@ -1,4 +1,5 @@
 pub mod commands;
+pub mod copilot;
 pub mod hotkey;
 pub mod icons;
 pub mod model;

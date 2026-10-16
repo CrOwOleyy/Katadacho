@@ -29,6 +29,7 @@ pub fn run() {
         .manage(launcher::Launcher::default())
         .manage(media::MediaState::default())
         .manage(timer::TimerState::default())
+        .manage(launcher::hotkey::HotkeyState::default())
         .setup(|app| {
             let data_dir = app.path().local_data_dir()?.join("Katadacho");
             let database = db::Database::open(&data_dir)?;
@@ -45,7 +46,8 @@ pub fn run() {
             clipboard::foreground::start();
             clipboard::start_secret_cleanup(app.handle().clone());
             launcher::start_indexing(app.handle().clone());
-            launcher::hotkey::register(app.handle());
+            let launcher_hotkey = app.state::<settings::SettingsState>().snapshot().hotkeys.launcher;
+            launcher::hotkey::apply(app.handle(), &launcher_hotkey);
             media::start(app.handle().clone());
             timer::start(app.handle().clone());
             notifications::start(app.handle().clone());
@@ -75,6 +77,7 @@ pub fn run() {
             launcher::commands::open_item_location,
             launcher::commands::reindex_launcher,
             launcher::commands::get_launcher_icon,
+            launcher::hotkey::get_hotkey_status,
             media::get_media_state,
             media::levels::start_audio_levels,
             media::levels::stop_audio_levels,
