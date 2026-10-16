@@ -1,11 +1,16 @@
 pub mod commands;
+#[cfg(windows)]
 pub mod copilot;
+pub mod desktop_entries;
 pub mod hotkey;
+#[cfg(windows)]
 pub mod icons;
 pub mod model;
 pub mod search;
+#[cfg(windows)]
 pub mod start_menu;
 pub mod user_dirs;
+#[cfg(windows)]
 pub mod uwp;
 
 use std::collections::HashSet;
@@ -16,7 +21,6 @@ use std::thread;
 use nucleo_matcher::{Config, Matcher};
 use tauri::{AppHandle, Manager};
 
-use crate::com::ComGuard;
 use model::{EntryKind, LauncherEntry, LauncherResult};
 
 const RESULT_LIMIT: usize = 30;
@@ -88,11 +92,7 @@ pub fn start_indexing(app: AppHandle) {
     thread::spawn(move || {
         let launcher = app.state::<Launcher>();
 
-        launcher.add(start_menu::scan());
-
-        if let Ok(_com) = ComGuard::new() {
-            launcher.add(uwp::scan());
-        }
+        launcher.add(installed_applications());
 
         launcher.add(user_dirs::scan(&user_roots(&app)));
     });
@@ -102,4 +102,20 @@ pub fn start_indexing(app: AppHandle) {
 pub fn reindex(app: AppHandle) {
     app.state::<Launcher>().clear();
     start_indexing(app);
+}
+
+/// Applications installées : menu Démarrer et Microsoft Store sous Windows.
+#[cfg(windows)]
+fn installed_applications() -> Vec<LauncherEntry> {
+    let mut entries = start_menu::scan();
+    if let Ok(_com) = crate::com::ComGuard::new() {
+        entries.extend(uwp::scan());
+    }
+    entries
+}
+
+/// Applications installées : fichiers `.desktop` sous Linux et les autres systèmes freedesktop.
+#[cfg(not(windows))]
+fn installed_applications() -> Vec<LauncherEntry> {
+    desktop_entries::scan()
 }
