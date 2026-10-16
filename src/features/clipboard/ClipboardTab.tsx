@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ipc } from "../../lib/ipc";
 import type { ClipboardFilter, ClipboardItem as Item } from "../../lib/types/clipboard";
+import { useSettings } from "../../store/SettingsContext";
 import { ClipboardItem } from "./ClipboardItem";
 import { TypeFilter } from "./TypeFilter";
 
@@ -10,6 +11,7 @@ const SEARCH_DEBOUNCE_MS = 120;
 const COPIED_FLASH_MS = 1200;
 
 export function ClipboardTab() {
+  const { settings } = useSettings();
   const [items, setItems] = useState<Item[]>([]);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<ClipboardFilter>("all");
@@ -93,6 +95,7 @@ export function ClipboardTab() {
             key={item.id}
             item={item}
             copied={copiedId === item.id}
+            secretTtlMinutes={settings.clipboard.secretTtlMinutes}
             onCopy={() => void copy(item)}
             onPaste={() => void run(() => ipc.pasteClipboardItem(item.id, true))}
             onTogglePin={() => void run(async () => { await ipc.togglePinClipboard(item.id); await load(); })}

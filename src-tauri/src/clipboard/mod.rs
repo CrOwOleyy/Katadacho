@@ -4,6 +4,7 @@ pub mod foreground;
 pub mod listener;
 pub mod paste;
 pub mod reader;
+pub mod secrets;
 pub mod source;
 pub mod store;
 
@@ -18,6 +19,7 @@ use tauri::{AppHandle, Emitter, Manager};
 use windows::Win32::Foundation::HWND;
 
 use crate::db::Database;
+use crate::settings::SettingsState;
 use crate::state::AppPaths;
 use classify::{classify_text, ContentKind};
 use reader::ClipboardContent;
@@ -79,6 +81,8 @@ pub fn capture(app: &AppHandle, owner: HWND) {
                 return;
             }
             let kind = classify_text(text);
+            let clipboard_settings = app.state::<SettingsState>().snapshot().clipboard;
+            let is_sensitive = clipboard_settings.detect_secrets && secrets::looks_secret(text);
             store::insert_or_bump(
                 &database,
                 &NewItem {
@@ -87,6 +91,7 @@ pub fn capture(app: &AppHandle, owner: HWND) {
                     image_path: None,
                     source_app_name: source.as_deref(),
                     content_hash: &hash_bytes(text.as_bytes()),
+                    is_sensitive,
                 },
             )
         }
@@ -107,6 +112,7 @@ pub fn capture(app: &AppHandle, owner: HWND) {
                     image_path: Some(&path.to_string_lossy()),
                     source_app_name: source.as_deref(),
                     content_hash: &hash,
+                    is_sensitive: false,
                 },
             )
         }
@@ -119,4 +125,30 @@ pub fn capture(app: &AppHandle, owner: HWND) {
         }
         Err(error) => eprintln!("clipboard store failed: {error}"),
     }
+}
+
+/// Vérifie régulièrement les secrets à effacer.
+const SECRET_SWEEP_INTERVAL: std::time::Duration = std::time::Duration::from_secs(20);
+const MS_PER_MINUTE: i64 = 60_000;
+
+/// Efface en tâche de fond les secrets non épinglés plus vieux que la durée réglée.
+pub fn start_secret_cleanup(app: AppHandle) {
+    std::thread::spawn(move || loop {
+        std::thread::sleep(SECRET_SWEEP_INTERVAL);
+
+        let ttl_minutes = app.state::<SettingsState>().snapshot().clipboard.secret_ttl_minutes;
+        let now_ms = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|elapsed| elapsed.as_millis() as i64)
+            .unwrap_or(0);
+        let cutoff = now_ms - i64::from(ttl_minutes) * MS_PER_MINUTE;
+
+        match store::delete_expired_sensitive(&app.state::<Database>(), cutoff) {
+            Ok(0) => {}
+            Ok(_) => {
+                let _ = app.emit(EVENT_CLIPBOARD_UPDATED, ());
+            }
+            Err(error) => eprintln!("secret cleanup failed: {error}"),
+        }
+    });
 }

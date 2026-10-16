@@ -1,4 +1,4 @@
-import { Pin, Trash2 } from "lucide-react";
+import { Lock, Pin, Trash2 } from "lucide-react";
 import type { ClipboardItem as Item } from "../../lib/types/clipboard";
 
 interface ClipboardItemProps {
@@ -8,6 +8,8 @@ interface ClipboardItemProps {
   onPaste: () => void;
   onTogglePin: () => void;
   onDelete: () => void;
+  /** Minutes avant l'effacement automatique d'un secret non épinglé. */
+  secretTtlMinutes: number;
 }
 
 function relativeTime(timestamp: number): string {
@@ -21,6 +23,16 @@ function relativeTime(timestamp: number): string {
 }
 
 function Preview({ item }: { item: Item }) {
+  // Un secret ne s'affiche jamais en clair dans la liste, il reste copiable et collable.
+  if (item.isSensitive) {
+    return (
+      <div className="flex items-center gap-2">
+        <Lock size={14} className="shrink-0 text-amber-300/80" />
+        <span className="font-mono text-sm tracking-widest text-white/70">••••••••••••</span>
+      </div>
+    );
+  }
+
   if (item.contentType === "image" && item.thumbnailBase64) {
     return (
       <img
@@ -53,7 +65,15 @@ function Preview({ item }: { item: Item }) {
   );
 }
 
-export function ClipboardItem({ item, copied, onCopy, onPaste, onTogglePin, onDelete }: ClipboardItemProps) {
+function subtitle(item: Item, secretTtlMinutes: number): string {
+  const origin = `${item.sourceAppName ?? "Inconnu"} · ${relativeTime(item.createdAt)}`;
+  if (!item.isSensitive) return origin;
+  if (item.isPinned) return `Secret épinglé · ${origin}`;
+  const minutesLeft = Math.max(0, Math.ceil((item.createdAt + secretTtlMinutes * 60_000 - Date.now()) / 60_000));
+  return `Secret, effacé dans ${minutesLeft} min · ${origin}`;
+}
+
+export function ClipboardItem({ item, copied, onCopy, onPaste, onTogglePin, onDelete, secretTtlMinutes }: ClipboardItemProps) {
   return (
     <div
       role="button"
@@ -67,7 +87,7 @@ export function ClipboardItem({ item, copied, onCopy, onPaste, onTogglePin, onDe
       <div className="min-w-0 flex-1">
         <Preview item={item} />
         <p className="mt-1 text-[10px] text-white/40">
-          {copied ? "Copié" : `${item.sourceAppName ?? "Inconnu"} · ${relativeTime(item.createdAt)}`}
+          {copied ? "Copié" : subtitle(item, secretTtlMinutes)}
         </p>
       </div>
 

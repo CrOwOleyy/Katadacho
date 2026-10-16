@@ -107,6 +107,24 @@ impl Default for NotificationSettings {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase", default)]
+pub struct ClipboardSettings {
+    /// Repère les clés d'API, jetons et mots de passe copiés à la main.
+    pub detect_secrets: bool,
+    /// Minutes avant l'effacement automatique d'un secret non épinglé.
+    pub secret_ttl_minutes: u32,
+}
+
+impl Default for ClipboardSettings {
+    fn default() -> Self {
+        Self {
+            detect_secrets: true,
+            secret_ttl_minutes: 2,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(rename_all = "camelCase", default)]
 pub struct Settings {
@@ -114,6 +132,7 @@ pub struct Settings {
     pub island: IslandSettings,
     pub timer: TimerSettings,
     pub notifications: NotificationSettings,
+    pub clipboard: ClipboardSettings,
 }
 
 impl Settings {
@@ -136,6 +155,8 @@ impl Settings {
         let n = &mut self.notifications;
         n.display_seconds = n.display_seconds.clamp(2, 60);
         n.blocked_apps.retain(|name| !name.trim().is_empty());
+
+        self.clipboard.secret_ttl_minutes = self.clipboard.secret_ttl_minutes.clamp(1, 1440);
         self
     }
 }

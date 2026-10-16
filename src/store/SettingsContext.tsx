@@ -18,6 +18,7 @@ const FALLBACK: Settings = {
     soundEnabled: true,
   },
   notifications: { enabled: true, displaySeconds: 6, showBody: true, soundEnabled: false, blockedApps: [] },
+  clipboard: { detectSecrets: true, secretTtlMinutes: 2 },
 };
 
 interface SettingsContextValue {
