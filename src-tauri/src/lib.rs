@@ -43,6 +43,7 @@ pub fn run() {
             click_through::start(app.handle().clone());
             clipboard::listener::start(app.handle().clone());
             clipboard::foreground::start();
+            clipboard::start_secret_cleanup(app.handle().clone());
             launcher::start_indexing(app.handle().clone());
             launcher::hotkey::register(app.handle());
             media::start(app.handle().clone());
