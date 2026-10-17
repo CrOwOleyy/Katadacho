@@ -101,7 +101,7 @@ fn reply(mut stream: &TcpStream, value: Value) {
     let _ = writeln!(stream, "{value}");
 }
 
-fn handle_connection(app: &AppHandle, token: &str, mut stream: TcpStream) {
+fn handle_connection(app: &AppHandle, token: &str, stream: TcpStream) {
     let _ = stream.set_read_timeout(Some(CONNECT_TIMEOUT));
     let Some(line) = read_line_limited(&stream) else {
         return;
