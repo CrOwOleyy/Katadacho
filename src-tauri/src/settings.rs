@@ -140,6 +140,33 @@ impl Default for HotkeySettings {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase", default)]
+pub struct MascotSettings {
+    /// Le fantôme se réjouit après une tâche réussie (speedtest, nettoyage de la RAM…).
+    pub happy_on_tasks: bool,
+    /// Le fantôme se concentre quand une application passe en plein écran.
+    pub focus_on_fullscreen: bool,
+    /// Le fantôme s'endort la nuit.
+    pub sleep_at_night: bool,
+    /// Heure de début de la nuit (0 à 23).
+    pub night_start_hour: u32,
+    /// Heure de fin de la nuit (0 à 23).
+    pub night_end_hour: u32,
+}
+
+impl Default for MascotSettings {
+    fn default() -> Self {
+        Self {
+            happy_on_tasks: true,
+            focus_on_fullscreen: true,
+            sleep_at_night: true,
+            night_start_hour: 23,
+            night_end_hour: 7,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(rename_all = "camelCase", default)]
 pub struct Settings {
@@ -149,6 +176,7 @@ pub struct Settings {
     pub timer: TimerSettings,
     pub notifications: NotificationSettings,
     pub clipboard: ClipboardSettings,
+    pub mascot: MascotSettings,
 }
 
 impl Settings {
@@ -173,6 +201,9 @@ impl Settings {
         n.blocked_apps.retain(|name| !name.trim().is_empty());
 
         self.clipboard.secret_ttl_minutes = self.clipboard.secret_ttl_minutes.clamp(1, 1440);
+
+        self.mascot.night_start_hour = self.mascot.night_start_hour.min(23);
+        self.mascot.night_end_hour = self.mascot.night_end_hour.min(23);
 
         if !crate::launcher::hotkey::CHOICES.contains(&self.hotkeys.launcher.as_str()) {
             self.hotkeys.launcher = crate::launcher::hotkey::DEFAULT_CHOICE.to_string();
