@@ -19,11 +19,11 @@ fn is_blocked(settings: &NotificationSettings, toast: &Toast) -> bool {
 /// Lance la surveillance des notifications du système.
 pub fn start(app: AppHandle) {
     #[cfg(windows)]
+    windows_watch::start(app);
     #[cfg(target_os = "linux")]
-    #[cfg(not(windows))]
+    linux::start(app);
     #[cfg(not(any(windows, target_os = "linux")))]
     drop(app);
-    linux::start(app);
 }
 
 /// `allowed`, `denied` ou `unspecified`.
