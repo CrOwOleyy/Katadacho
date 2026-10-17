@@ -1,3 +1,6 @@
+#[cfg(not(windows))]
+mod linux;
+mod parse;
 #[cfg(windows)]
 pub mod audio;
 #[cfg(windows)]
@@ -94,48 +97,10 @@ mod imp {
     }
 }
 
-/// Autres systèmes : ces contrôles arrivent dans une étape suivante (PipeWire, logind, NetworkManager,
-/// BlueZ sous Linux). D'ici là, chaque commande renvoie une erreur explicite.
+/// Linux : outils en ligne de commande standard (pactl, nmcli, bluetoothctl, logind).
 #[cfg(not(windows))]
 mod imp {
-    use super::types::{AudioState, NetworkBluetoothState};
-    use crate::platform::unsupported;
-
-    pub fn get_audio_state() -> Result<AudioState, String> {
-        Err(unsupported("Le contrôle du volume"))
-    }
-
-    pub fn set_master_volume(_level: u8) -> Result<(), String> {
-        Err(unsupported("Le contrôle du volume"))
-    }
-
-    pub fn toggle_mute() -> Result<bool, String> {
-        Err(unsupported("Le contrôle du volume"))
-    }
-
-    pub fn set_default_audio_device(_device_id: &str) -> Result<(), String> {
-        Err(unsupported("Le choix de la sortie audio"))
-    }
-
-    pub fn get_brightness() -> Result<u8, String> {
-        Err(unsupported("Le réglage de la luminosité"))
-    }
-
-    pub fn set_brightness(_level: u8) -> Result<(), String> {
-        Err(unsupported("Le réglage de la luminosité"))
-    }
-
-    pub fn get_network_bt_state() -> Result<NetworkBluetoothState, String> {
-        Err(unsupported("L'état du Wi-Fi et du Bluetooth"))
-    }
-
-    pub fn toggle_wifi(_enable: bool) -> Result<(), String> {
-        Err(unsupported("L'activation du Wi-Fi"))
-    }
-
-    pub fn toggle_bluetooth(_enable: bool) -> Result<(), String> {
-        Err(unsupported("L'activation du Bluetooth"))
-    }
+    pub use super::linux::*;
 }
 
 #[tauri::command]
