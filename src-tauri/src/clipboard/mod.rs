@@ -1,6 +1,7 @@
 #[cfg(windows)]
 pub mod capture;
 pub mod classify;
+pub mod ingest;
 pub mod commands;
 #[cfg(windows)]
 pub mod foreground;
