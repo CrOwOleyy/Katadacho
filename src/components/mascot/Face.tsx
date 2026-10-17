@@ -115,10 +115,11 @@ function Heart() {
 export function Face({ mood, blinking, look, mini }: FaceProps) {
   return (
     <g>
-      <g transform={`translate(${look.x} ${look.y})`}>
+      {/* Le regard glisse avec un ressort au lieu de sauter d'une position à l'autre. */}
+      <motion.g animate={{ x: look.x, y: look.y }} transition={{ type: "spring", stiffness: 260, damping: 18 }}>
         <Eyes mood={mood} blinking={blinking} />
         <Brows mood={mood} />
-      </g>
+      </motion.g>
       <Mouth mood={mood} />
       {!mini && mood !== "alert" && mood !== "sad" && <Heart />}
       {mood === "sad" && <path d="M61 47 Q64 52 61 55 Q58 52 61 47 Z" fill={C.tear} />}
