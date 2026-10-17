@@ -1,6 +1,7 @@
 mod clipboard;
 mod controls;
 mod db;
+mod idle;
 mod launcher;
 mod media;
 pub mod memory;
@@ -78,6 +79,7 @@ pub fn run() {
             launcher::commands::reindex_launcher,
             launcher::commands::get_launcher_icon,
             launcher::hotkey::get_hotkey_status,
+            idle::get_idle_seconds,
             media::get_media_state,
             media::levels::start_audio_levels,
             media::levels::stop_audio_levels,
