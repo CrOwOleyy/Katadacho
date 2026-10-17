@@ -3,6 +3,7 @@
 
 fn main() {
     // Relancé élevé pour le nettoyage profond de la mémoire : on ne démarre pas l'application.
+    #[cfg(windows)]
     if std::env::args().any(|argument| argument == katadacho_lib::memory::deep::CLI_FLAG) {
         std::process::exit(katadacho_lib::memory::deep::run_cli());
     }
