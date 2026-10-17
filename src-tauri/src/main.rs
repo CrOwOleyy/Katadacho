@@ -5,6 +5,7 @@ fn main() {
     let arguments: Vec<String> = std::env::args().collect();
 
     // Relancé élevé pour le nettoyage profond de la mémoire : on ne démarre pas l'application.
+    #[cfg(windows)]
     if arguments.iter().any(|argument| argument == katadacho_lib::memory::deep::CLI_FLAG) {
         std::process::exit(katadacho_lib::memory::deep::run_cli());
     }
