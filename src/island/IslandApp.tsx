@@ -7,12 +7,19 @@ import { ControlsTab } from "../features/controls/ControlsTab";
 import { DashboardTab } from "../features/dashboard/DashboardTab";
 import { LauncherTab } from "../features/launcher/LauncherTab";
 import { SettingsTab } from "../features/settings/SettingsTab";
+import { AiQuestionCard } from "../features/ai/AiQuestionCard";
 import { NotificationBanner } from "../features/notifications/NotificationBanner";
 import { TimerChip } from "../features/timer/TimerChip";
 import { TimerTab } from "../features/timer/TimerTab";
 import { useNotifications } from "../hooks/useNotifications";
+import { useAiQuestion } from "../hooks/useAiQuestion";
+import { useFullscreenApp } from "../hooks/useFullscreenApp";
+import { useMoodPulse } from "../hooks/useMoodPulse";
+import { useSystemIdle } from "../hooks/useSystemIdle";
+import { isNight } from "../lib/night";
 import { useTimer } from "../hooks/useTimer";
 import type { GhostMood } from "../components/mascot/mood";
+import { pickMood } from "../components/mascot/pickMood";
 import { Soul } from "../components/soul/Soul";
 import { MediaPill } from "../features/media/MediaPill";
 import { useMedia } from "../hooks/useMedia";
@@ -24,12 +31,16 @@ const HIDDEN = { width: 200, height: 4 };
 const IDLE_HEIGHT = 36;
 /** Taille de la pilule pendant l'affichage d'une notification. */
 const BANNER = { width: 460, height: 68 };
+/** Taille de la pilule quand Claude pose une question avec des boutons. */
+const QUESTION = { width: 520, height: 124 };
 /** Largeur de la pilule repliée : base, plus la place du média et du minuteur quand ils sont affichés. */
 const IDLE_BASE_WIDTH = 180;
 const IDLE_MEDIA_EXTRA = 90;
 const IDLE_TIMER_EXTRA = 74;
 const EXPANDED = { width: 760, height: 480 };
 const CLOCK_TICK_MS = 30_000;
+/** Inactivité au bout de laquelle la mascotte s'endort. */
+const SLEEP_AFTER_SECONDS = 60;
 /** Fermeture d'un menu ouvert au clavier si la souris n'est jamais venue dessus. */
 const ABANDONED_CLOSE_MS = 20_000;
 
@@ -79,20 +90,29 @@ export function IslandApp() {
   const media = showMediaInPill ? mediaInfo : null;
   const { snapshot: timer, finished } = useTimer();
   const { current: toast, pending, dismissCurrent } = useNotifications();
+  const { question: aiQuestion, answer: answerAiQuestion, error: aiQuestionError } = useAiQuestion();
 
-  // Humeur de la mascotte, par ordre de priorité : ce qui vient d'arriver passe avant le fond sonore.
-  const breakPhase = timer.phase === "shortBreak" || timer.phase === "longBreak";
-  const mood: GhostMood = toast
-    ? "alert"
-    : finished
-      ? "happy"
-      : timer.status === "running" && timer.phase === "focus"
-        ? "focus"
-        : timer.status === "running" && breakPhase
-          ? "sleepy"
-          : media?.playing
-            ? "music"
-            : "idle";
+  // Sans clavier ni souris depuis une minute, la mascotte s'endort.
+  const userIdle = useSystemIdle(SLEEP_AFTER_SECONDS);
+
+  const mascotSettings = settings.mascot;
+  const moodPulse = useMoodPulse();
+  const fullscreenApp = useFullscreenApp(mascotSettings.focusOnFullscreen);
+  const night =
+    mascotSettings.sleepAtNight &&
+    isNight(new Date().getHours(), mascotSettings.nightStartHour, mascotSettings.nightEndHour);
+
+  const mood: GhostMood = pickMood({
+    notification: toast !== null || aiQuestion !== null,
+    pulse: mascotSettings.happyOnTasks || moodPulse === "sad" ? moodPulse : null,
+    timerFinished: finished !== null,
+    timerRunning: timer.status === "running",
+    timerPhase: timer.phase,
+    fullscreenApp,
+    mediaPlaying: media?.playing ?? false,
+    userIdle,
+    night,
+  });
   const timerVisible = timer.status !== "idle";
 
   useClickThroughBounds(pillRef);
@@ -102,15 +122,21 @@ export function IslandApp() {
   // L'Island se cache après le délai réglé une fois repliée (0 = jamais). Tant que le menu est
   // déployé ou qu'un minuteur est actif, le compte à rebours est suspendu.
   useEffect(() => {
-    if (!visible || expanded || autoHideSeconds === 0 || timerVisible || toast !== null) return;
+    if (!visible || expanded || autoHideSeconds === 0 || timerVisible || toast !== null || aiQuestion !== null) return;
     const timeout = window.setTimeout(() => setVisible(false), autoHideSeconds * 1000);
     return () => window.clearTimeout(timeout);
-  }, [visible, expanded, autoHideSeconds, timerVisible, toast]);
+  }, [visible, expanded, autoHideSeconds, timerVisible, toast, aiQuestion]);
 
   // Une phase du minuteur se termine : l'Island réapparaît, même si elle était cachée.
   useEffect(() => {
     if (finished) setVisible(true);
   }, [finished]);
+
+  // Une question de Claude arrive : l'Island réapparaît, même si elle était cachée.
+  const aiQuestionId = aiQuestion?.id;
+  useEffect(() => {
+    if (aiQuestionId !== undefined) setVisible(true);
+  }, [aiQuestionId]);
 
   // Une notification arrive : l'Island réapparaît, même si elle était cachée.
   const toastId = toast?.id;
@@ -189,6 +215,8 @@ export function IslandApp() {
     // Depuis la barre cachée, l'Island réapparaît tout de suite, le menu suit si le survol continue.
     if (!visible) setVisible(true);
     if (!expanded) {
+      // Pendant une notification, le survol sert à la lire : il n'ouvre pas le menu.
+      if (toast || aiQuestion) return;
       hoverTimer.current = window.setTimeout(() => setExpanded(true), openDelayMs);
     }
   };
@@ -206,7 +234,7 @@ export function IslandApp() {
     width: IDLE_BASE_WIDTH + (media ? IDLE_MEDIA_EXTRA : 0) + (timerVisible ? IDLE_TIMER_EXTRA : 0),
     height: IDLE_HEIGHT,
   };
-  const size = !visible ? HIDDEN : expanded ? EXPANDED : toast ? BANNER : idleSize;
+  const size = !visible ? HIDDEN : expanded ? EXPANDED : aiQuestion ? QUESTION : toast ? BANNER : idleSize;
 
   return (
     <div className="flex h-full w-full justify-center">
@@ -216,7 +244,7 @@ export function IslandApp() {
         onMouseLeave={handleLeave}
         onClick={() => {
           // Un clic est une intention explicite : on ouvre sans attendre le délai de survol.
-          if (visible && !expanded) {
+          if (visible && !expanded && !toast && !aiQuestion) {
             clearHoverTimer();
             setExpanded(true);
           }
@@ -301,7 +329,19 @@ export function IslandApp() {
               </div>
             </motion.div>
           )}
-          {visible && !expanded && toast && (
+          {visible && !expanded && aiQuestion && (
+            <motion.div
+              key="ai-question"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={fade}
+              className="h-full w-full"
+            >
+              <AiQuestionCard question={aiQuestion} error={aiQuestionError} onAnswer={(option) => void answerAiQuestion(option)} />
+            </motion.div>
+          )}
+          {visible && !expanded && !aiQuestion && toast && (
             <motion.div
               key="toast"
               initial={{ opacity: 0 }}
@@ -318,7 +358,7 @@ export function IslandApp() {
               />
             </motion.div>
           )}
-          {visible && !expanded && !toast && (
+          {visible && !expanded && !aiQuestion && !toast && (
             <motion.div
               key="idle"
               initial={{ opacity: 0 }}

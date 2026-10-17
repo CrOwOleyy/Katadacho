@@ -2,6 +2,7 @@ import { MemoryStick, ShieldCheck, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { BentoCard } from "../../components/ui/BentoCard";
 import { ipc } from "../../lib/ipc";
+import { pulseMood } from "../../lib/moodPulse";
 import type { CleanResult } from "../../lib/types/memory";
 
 type Running = "quick" | "deep" | null;
@@ -30,9 +31,12 @@ export function MemoryCleaner() {
     setRunning(mode);
     setError(null);
     try {
-      setResult(mode === "quick" ? await ipc.cleanMemoryQuick() : await ipc.cleanMemoryDeep());
+      const outcome = mode === "quick" ? await ipc.cleanMemoryQuick() : await ipc.cleanMemoryDeep();
+      setResult(outcome);
+      pulseMood("happy");
     } catch (reason) {
       setResult(null);
+      pulseMood("sad");
       setError(String(reason));
     } finally {
       setRunning(null);

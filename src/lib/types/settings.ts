@@ -39,7 +39,16 @@ export interface HotkeySettings {
   launcher: LauncherHotkey;
 }
 
+export interface MascotSettings {
+  happyOnTasks: boolean;
+  focusOnFullscreen: boolean;
+  sleepAtNight: boolean;
+  nightStartHour: number;
+  nightEndHour: number;
+}
+
 export interface Settings {
+  mascot: MascotSettings;
   hotkeys: HotkeySettings;
   animations: AnimationSettings;
   island: IslandSettings;

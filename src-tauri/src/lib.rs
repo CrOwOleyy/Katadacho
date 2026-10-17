@@ -3,7 +3,10 @@ mod clipboard;
 mod com;
 mod controls;
 mod db;
+mod fullscreen;
+mod idle;
 mod launcher;
+pub mod mcp;
 mod media;
 mod platform;
 pub mod memory;
@@ -32,12 +35,14 @@ pub fn run() {
         .manage(launcher::Launcher::default())
         .manage(media::MediaState::default())
         .manage(timer::TimerState::default())
+        .manage(mcp::bridge::PendingQuestions::default())
         .manage(launcher::hotkey::HotkeyState::default())
         .setup(|app| {
             let data_dir = app.path().local_data_dir()?.join("Katadacho");
             let database = db::Database::open(&data_dir)?;
             app.manage(settings::SettingsState(std::sync::RwLock::new(settings::load(&database))));
             app.manage(database);
+            mcp::bridge::start(app.handle().clone(), data_dir.clone());
             app.manage(state::AppPaths { data_dir });
             tray::create(app)?;
             window::position_island(app)?;
@@ -79,6 +84,12 @@ pub fn run() {
             launcher::commands::reindex_launcher,
             launcher::commands::get_launcher_icon,
             launcher::hotkey::get_hotkey_status,
+            idle::get_idle_seconds,
+            mcp::get_claude_bridge_status,
+            mcp::install_claude_mcp_bridge,
+            mcp::uninstall_claude_mcp_bridge,
+            mcp::answer_ai_question,
+            fullscreen::is_fullscreen_app_active,
             media::get_media_state,
             media::levels::start_audio_levels,
             media::levels::stop_audio_levels,

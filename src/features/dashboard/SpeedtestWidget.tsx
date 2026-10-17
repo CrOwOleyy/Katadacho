@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BentoCard } from "../../components/ui/BentoCard";
 import { ipc } from "../../lib/ipc";
+import { pulseMood } from "../../lib/moodPulse";
 import type { SpeedtestEvent } from "../../lib/types/speedtest";
 import { SpeedGauge } from "./SpeedGauge";
 import { Gauge } from "lucide-react";
@@ -50,6 +51,7 @@ export function SpeedtestWidget() {
           }));
           setLive(0);
           setPhase("done");
+          pulseMood("happy");
           break;
       }
     };
@@ -59,6 +61,7 @@ export function SpeedtestWidget() {
     } catch (reason) {
       setError(String(reason));
       setPhase("error");
+      pulseMood("sad");
     }
   };
 
