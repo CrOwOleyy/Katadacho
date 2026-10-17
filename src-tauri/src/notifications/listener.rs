@@ -1,7 +1,7 @@
 //! Lecture des notifications toast de Windows via `UserNotificationListener`.
 //! L'utilisateur doit autoriser l'accès aux notifications pour l'application.
 
-use serde::Serialize;
+use super::types::{Access, Toast};
 use windows::UI::Notifications::Management::{UserNotificationListener, UserNotificationListenerAccessStatus};
 use windows::UI::Notifications::{KnownNotificationBindings, NotificationKinds, UserNotification};
 
@@ -9,26 +9,6 @@ use windows::UI::Notifications::{KnownNotificationBindings, NotificationKinds, U
 const WINDOWS_TO_UNIX_EPOCH_MS: i64 = 11_644_473_600_000;
 /// Un DateTime Windows compte des intervalles de 100 nanosecondes.
 const TICKS_PER_MS: i64 = 10_000;
-
-#[derive(Serialize, Clone, Debug, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct Toast {
-    pub id: u32,
-    pub app_name: String,
-    pub title: String,
-    pub body: String,
-    /// Horodatage Unix en millisecondes.
-    pub created_ms: i64,
-}
-
-#[derive(Serialize, Clone, Copy, Debug, PartialEq, Eq)]
-#[serde(rename_all = "lowercase")]
-pub enum Access {
-    Allowed,
-    Denied,
-    /// L'utilisateur n'a pas encore répondu à la demande d'autorisation.
-    Unspecified,
-}
 
 fn convert(status: UserNotificationListenerAccessStatus) -> Access {
     if status == UserNotificationListenerAccessStatus::Allowed {
