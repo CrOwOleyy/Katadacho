@@ -4,6 +4,7 @@ import { Toggle } from "../../components/ui/Toggle";
 import { useSettings } from "../../store/SettingsContext";
 import { AutostartToggle } from "./AutostartToggle";
 import { BlockedApps } from "./BlockedApps";
+import { ClaudeBridgeSetting } from "./ClaudeBridgeSetting";
 import { HotkeySetting } from "./HotkeySetting";
 import { NotificationAccess } from "./NotificationAccess";
 import { SettingRow } from "./SettingRow";
@@ -92,6 +93,8 @@ export function SettingsTab() {
               />
             </SettingRow>
           </BentoCard>
+
+          <ClaudeBridgeSetting />
 
           <BentoCard title="Mascotte" icon={<GhostIcon size={14} />}>
             <SettingRow label="Content après une tâche" description="Speedtest ou nettoyage de la RAM réussi.">
