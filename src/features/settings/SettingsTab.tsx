@@ -1,4 +1,4 @@
-import { Bell, Gauge, Lock, PanelTop, RotateCcw, Timer } from "lucide-react";
+import { Bell, Gauge, Ghost as GhostIcon, Lock, PanelTop, RotateCcw, Timer } from "lucide-react";
 import { BentoCard } from "../../components/ui/BentoCard";
 import { Toggle } from "../../components/ui/Toggle";
 import { useSettings } from "../../store/SettingsContext";
@@ -91,6 +91,46 @@ export function SettingsTab() {
                 onChange={(showMediaInPill) => update((s) => ({ ...s, island: { ...s.island, showMediaInPill } }))}
               />
             </SettingRow>
+          </BentoCard>
+
+          <BentoCard title="Mascotte" icon={<GhostIcon size={14} />}>
+            <SettingRow label="Content après une tâche" description="Speedtest ou nettoyage de la RAM réussi.">
+              <Toggle
+                label="Content après une tâche"
+                checked={settings.mascot.happyOnTasks}
+                onChange={(happyOnTasks) => update((s) => ({ ...s, mascot: { ...s.mascot, happyOnTasks } }))}
+              />
+            </SettingRow>
+            <SettingRow label="Concentré en plein écran" description="Une application occupe tout l'écran.">
+              <Toggle
+                label="Concentré en plein écran"
+                checked={settings.mascot.focusOnFullscreen}
+                onChange={(focusOnFullscreen) => update((s) => ({ ...s, mascot: { ...s.mascot, focusOnFullscreen } }))}
+              />
+            </SettingRow>
+            <SettingRow label="Endormi la nuit">
+              <Toggle
+                label="Endormi la nuit"
+                checked={settings.mascot.sleepAtNight}
+                onChange={(sleepAtNight) => update((s) => ({ ...s, mascot: { ...s.mascot, sleepAtNight } }))}
+              />
+            </SettingRow>
+            <SettingSlider
+              label="La nuit commence à"
+              value={settings.mascot.nightStartHour}
+              min={0}
+              max={23}
+              format={(hour) => `${hour} h`}
+              onChange={(nightStartHour) => update((s) => ({ ...s, mascot: { ...s.mascot, nightStartHour } }))}
+            />
+            <SettingSlider
+              label="La nuit finit à"
+              value={settings.mascot.nightEndHour}
+              min={0}
+              max={23}
+              format={(hour) => `${hour} h`}
+              onChange={(nightEndHour) => update((s) => ({ ...s, mascot: { ...s.mascot, nightEndHour } }))}
+            />
           </BentoCard>
 
           <BentoCard title="Presse-papier" icon={<Lock size={14} />}>
