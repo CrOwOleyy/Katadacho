@@ -1,6 +1,7 @@
 mod clipboard;
 mod controls;
 mod db;
+mod fullscreen;
 mod idle;
 mod launcher;
 mod media;
@@ -80,6 +81,7 @@ pub fn run() {
             launcher::commands::get_launcher_icon,
             launcher::hotkey::get_hotkey_status,
             idle::get_idle_seconds,
+            fullscreen::is_fullscreen_app_active,
             media::get_media_state,
             media::levels::start_audio_levels,
             media::levels::stop_audio_levels,
