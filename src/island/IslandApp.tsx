@@ -11,6 +11,7 @@ import { NotificationBanner } from "../features/notifications/NotificationBanner
 import { TimerChip } from "../features/timer/TimerChip";
 import { TimerTab } from "../features/timer/TimerTab";
 import { useNotifications } from "../hooks/useNotifications";
+import { useSystemIdle } from "../hooks/useSystemIdle";
 import { useTimer } from "../hooks/useTimer";
 import type { GhostMood } from "../components/mascot/mood";
 import { Soul } from "../components/soul/Soul";
@@ -30,6 +31,8 @@ const IDLE_MEDIA_EXTRA = 90;
 const IDLE_TIMER_EXTRA = 74;
 const EXPANDED = { width: 760, height: 480 };
 const CLOCK_TICK_MS = 30_000;
+/** Inactivité au bout de laquelle la mascotte s'endort. */
+const SLEEP_AFTER_SECONDS = 60;
 /** Fermeture d'un menu ouvert au clavier si la souris n'est jamais venue dessus. */
 const ABANDONED_CLOSE_MS = 20_000;
 
@@ -80,6 +83,9 @@ export function IslandApp() {
   const { snapshot: timer, finished } = useTimer();
   const { current: toast, pending, dismissCurrent } = useNotifications();
 
+  // Sans clavier ni souris depuis une minute, la mascotte s'endort.
+  const userIdle = useSystemIdle(SLEEP_AFTER_SECONDS);
+
   // Humeur de la mascotte, par ordre de priorité : ce qui vient d'arriver passe avant le fond sonore.
   const breakPhase = timer.phase === "shortBreak" || timer.phase === "longBreak";
   const mood: GhostMood = toast
@@ -92,7 +98,9 @@ export function IslandApp() {
           ? "sleepy"
           : media?.playing
             ? "music"
-            : "idle";
+            : userIdle
+              ? "sleepy"
+              : "idle";
   const timerVisible = timer.status !== "idle";
 
   useClickThroughBounds(pillRef);
