@@ -157,7 +157,7 @@ mod imp {
     }
 }
 
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "linux")))]
 mod imp {
     use super::MediaPosition;
     use crate::platform::unsupported;
@@ -180,5 +180,36 @@ mod imp {
 
     pub async fn position() -> Result<Option<MediaPosition>, String> {
         Ok(None)
+    }
+}
+
+/// Linux : MPRIS sur le bus de session D-Bus, lu sur un thread bloquant.
+#[cfg(target_os = "linux")]
+mod imp {
+    use super::MediaPosition;
+    use crate::media::mpris;
+
+    async fn blocking<T: Send + 'static>(task: impl FnOnce() -> Result<T, String> + Send + 'static) -> Result<T, String> {
+        tauri::async_runtime::spawn_blocking(task).await.map_err(|e| e.to_string())?
+    }
+
+    pub async fn toggle_play_pause() -> Result<(), String> {
+        blocking(mpris::toggle_play_pause).await
+    }
+
+    pub async fn next() -> Result<(), String> {
+        blocking(mpris::next).await
+    }
+
+    pub async fn previous() -> Result<(), String> {
+        blocking(mpris::previous).await
+    }
+
+    pub async fn seek(seconds: f64) -> Result<(), String> {
+        blocking(move || mpris::seek(seconds)).await
+    }
+
+    pub async fn position() -> Result<Option<MediaPosition>, String> {
+        blocking(mpris::position).await
     }
 }

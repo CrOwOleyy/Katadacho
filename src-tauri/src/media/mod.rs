@@ -6,9 +6,12 @@ use serde::Serialize;
 use tauri::{AppHandle, State};
 
 pub mod controls;
+mod cover;
 #[cfg(windows)]
 mod gsmtc;
 pub mod levels;
+#[cfg(target_os = "linux")]
+mod mpris;
 
 pub const EVENT_MEDIA_CHANGED: &str = "media-changed";
 
@@ -38,12 +41,13 @@ pub fn get_media_state(state: State<'_, MediaState>) -> Option<MediaInfo> {
     state.0.lock().unwrap_or_else(|e| e.into_inner()).clone()
 }
 
-/// Lance la surveillance du média en cours. Windows : contrôles multimédias système.
-/// Les autres systèmes (MPRIS sous Linux) arrivent dans une étape suivante : d'ici là, aucun
-/// média n'est signalé et la pilule reste simplement sans pochette.
+/// Lance la surveillance du média en cours. Windows : contrôles multimédias système. Linux : MPRIS.
+/// Les autres systèmes ne signalent aucun média : la pilule reste simplement sans pochette.
 pub fn start(app: AppHandle) {
     #[cfg(windows)]
     gsmtc::start(app);
-    #[cfg(not(windows))]
+    #[cfg(target_os = "linux")]
+    mpris::start(app);
+    #[cfg(not(any(windows, target_os = "linux")))]
     drop(app);
 }
