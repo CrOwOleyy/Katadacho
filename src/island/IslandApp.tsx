@@ -11,9 +11,13 @@ import { NotificationBanner } from "../features/notifications/NotificationBanner
 import { TimerChip } from "../features/timer/TimerChip";
 import { TimerTab } from "../features/timer/TimerTab";
 import { useNotifications } from "../hooks/useNotifications";
+import { useFullscreenApp } from "../hooks/useFullscreenApp";
+import { useMoodPulse } from "../hooks/useMoodPulse";
 import { useSystemIdle } from "../hooks/useSystemIdle";
+import { isNight } from "../lib/night";
 import { useTimer } from "../hooks/useTimer";
 import type { GhostMood } from "../components/mascot/mood";
+import { pickMood } from "../components/mascot/pickMood";
 import { Soul } from "../components/soul/Soul";
 import { MediaPill } from "../features/media/MediaPill";
 import { useMedia } from "../hooks/useMedia";
@@ -86,21 +90,24 @@ export function IslandApp() {
   // Sans clavier ni souris depuis une minute, la mascotte s'endort.
   const userIdle = useSystemIdle(SLEEP_AFTER_SECONDS);
 
-  // Humeur de la mascotte, par ordre de priorité : ce qui vient d'arriver passe avant le fond sonore.
-  const breakPhase = timer.phase === "shortBreak" || timer.phase === "longBreak";
-  const mood: GhostMood = toast
-    ? "alert"
-    : finished
-      ? "happy"
-      : timer.status === "running" && timer.phase === "focus"
-        ? "focus"
-        : timer.status === "running" && breakPhase
-          ? "sleepy"
-          : media?.playing
-            ? "music"
-            : userIdle
-              ? "sleepy"
-              : "idle";
+  const mascotSettings = settings.mascot;
+  const moodPulse = useMoodPulse();
+  const fullscreenApp = useFullscreenApp(mascotSettings.focusOnFullscreen);
+  const night =
+    mascotSettings.sleepAtNight &&
+    isNight(new Date().getHours(), mascotSettings.nightStartHour, mascotSettings.nightEndHour);
+
+  const mood: GhostMood = pickMood({
+    notification: toast !== null,
+    pulse: mascotSettings.happyOnTasks || moodPulse === "sad" ? moodPulse : null,
+    timerFinished: finished !== null,
+    timerRunning: timer.status === "running",
+    timerPhase: timer.phase,
+    fullscreenApp,
+    mediaPlaying: media?.playing ?? false,
+    userIdle,
+    night,
+  });
   const timerVisible = timer.status !== "idle";
 
   useClickThroughBounds(pillRef);
