@@ -18,6 +18,8 @@ pub fn serve(input: impl BufRead, mut output: impl Write, bridge: &dyn Bridge) {
         let Ok(line) = line else {
             break;
         };
+        // Certains clients (PowerShell, éditeurs) ajoutent un BOM UTF-8 au début du flux.
+        let line = line.trim_start_matches('\u{feff}').to_string();
         if line.trim().is_empty() {
             continue;
         }
@@ -86,5 +88,31 @@ mod tests {
         assert_eq!(replies.len(), 2);
         assert_eq!(replies[0]["error"]["code"], ERROR_PARSE);
         assert_eq!(replies[1]["id"], 7);
+    }
+}
+
+#[cfg(test)]
+mod bom_tests {
+    use super::*;
+    use std::io::Cursor;
+
+    struct Silent;
+    impl Bridge for Silent {
+        fn notify(&self, _: &str, _: &str, _: &str) -> Result<(), String> {
+            Ok(())
+        }
+        fn ask(&self, _: &str, options: &[String]) -> Result<String, String> {
+            Ok(options[0].clone())
+        }
+    }
+
+    #[test]
+    fn accepts_a_utf8_bom_before_the_first_message() {
+        let input = "\u{feff}{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\"}\n";
+        let mut output = Vec::new();
+        serve(Cursor::new(input.to_string()), &mut output, &Silent);
+        let reply: Value = serde_json::from_str(String::from_utf8(output).unwrap().trim()).unwrap();
+        assert_eq!(reply["id"], 1);
+        assert!(reply.get("error").is_none());
     }
 }
