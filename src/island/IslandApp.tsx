@@ -189,6 +189,8 @@ export function IslandApp() {
     // Depuis la barre cachée, l'Island réapparaît tout de suite, le menu suit si le survol continue.
     if (!visible) setVisible(true);
     if (!expanded) {
+      // Pendant une notification, le survol sert à la lire : il n'ouvre pas le menu.
+      if (toast) return;
       hoverTimer.current = window.setTimeout(() => setExpanded(true), openDelayMs);
     }
   };
@@ -216,7 +218,7 @@ export function IslandApp() {
         onMouseLeave={handleLeave}
         onClick={() => {
           // Un clic est une intention explicite : on ouvre sans attendre le délai de survol.
-          if (visible && !expanded) {
+          if (visible && !expanded && !toast) {
             clearHoverTimer();
             setExpanded(true);
           }
