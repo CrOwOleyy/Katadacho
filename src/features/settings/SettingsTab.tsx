@@ -211,7 +211,7 @@ export function SettingsTab() {
             </SettingRow>
           </BentoCard>
 
-          <BentoCard title="Notifications Windows" icon={<Bell size={14} />}>
+          <BentoCard title="Notifications" icon={<Bell size={14} />}>
             <NotificationAccess />
             <SettingRow label="Afficher dans l'Island">
               <Toggle
