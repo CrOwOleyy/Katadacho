@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Compile Katadacho dans un conteneur Linux. Usage : build-in-container.sh <check|bundle> [bundles]
+# Compile Katadacho dans un conteneur Linux. Usage : build-in-container.sh <check|test|bundle> [bundles]
 # Le dépôt est monté en lecture seule sur /repo ; on le copie sans les artefacts Windows.
 set -euo pipefail
 
@@ -18,6 +18,10 @@ case "$mode" in
     check)
         pnpm build
         cd src-tauri && cargo check --locked
+        ;;
+    test)
+        mkdir -p dist && touch dist/index.html
+        cd src-tauri && cargo test --locked --lib
         ;;
     bundle)
         pnpm tauri build --bundles "$bundles"
