@@ -1,4 +1,4 @@
-#[cfg(not(windows))]
+#[cfg(target_os = "linux")]
 mod linux;
 #[cfg(windows)]
 pub mod listener;
@@ -19,8 +19,10 @@ fn is_blocked(settings: &NotificationSettings, toast: &Toast) -> bool {
 /// Lance la surveillance des notifications du système.
 pub fn start(app: AppHandle) {
     #[cfg(windows)]
-    windows_watch::start(app);
+    #[cfg(target_os = "linux")]
     #[cfg(not(windows))]
+    #[cfg(not(any(windows, target_os = "linux")))]
+    drop(app);
     linux::start(app);
 }
 
@@ -33,7 +35,7 @@ pub fn get_notification_access() -> Result<Access, String> {
     }
     #[cfg(not(windows))]
     {
-        Ok(linux::access())
+        Ok(Access::Allowed)
     }
 }
 
@@ -52,7 +54,7 @@ pub async fn request_notification_access() -> Result<Access, String> {
     }
     #[cfg(not(windows))]
     {
-        Ok(linux::access())
+        Ok(Access::Allowed)
     }
 }
 
