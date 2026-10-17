@@ -2,6 +2,8 @@
 pub mod capture;
 pub mod classify;
 pub mod ingest;
+#[cfg(target_os = "linux")]
+pub mod linux;
 pub mod commands;
 #[cfg(windows)]
 pub mod foreground;
@@ -30,14 +32,16 @@ use store::ClipboardItem;
 pub const EVENT_CLIPBOARD_UPDATED: &str = "clipboard-updated";
 
 /// Démarre le presse-papier. Sous Windows, les copies sont capturées via `WM_CLIPBOARDUPDATE` et la
-/// fenêtre active est suivie pour le collage. Sur les autres systèmes, l'historique reste consultable
-/// mais n'est pas encore alimenté. Le nettoyage des secrets tourne partout.
+/// fenêtre active est suivie pour le collage. Sous Linux, le contenu est relu régulièrement (X11 et
+/// Wayland). Le nettoyage des secrets tourne partout.
 pub fn start(app: AppHandle) {
     #[cfg(windows)]
     {
         listener::start(app.clone());
         foreground::start();
     }
+    #[cfg(target_os = "linux")]
+    linux::start(app.clone());
     start_secret_cleanup(app);
 }
 

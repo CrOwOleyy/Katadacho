@@ -78,7 +78,12 @@ fn put_back(item: &ClipboardItem, simulate_paste: bool) -> Result<(), String> {
     Ok(())
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "linux")]
+fn put_back(item: &ClipboardItem, simulate_paste: bool) -> Result<(), String> {
+    super::linux::put_back(item.text_content.as_deref(), item.image_path.as_deref().map(Path::new), simulate_paste)
+}
+
+#[cfg(not(any(windows, target_os = "linux")))]
 fn put_back(_item: &ClipboardItem, _simulate_paste: bool) -> Result<(), String> {
     Err(crate::platform::unsupported("Le collage depuis l'historique"))
 }
