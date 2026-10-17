@@ -4,6 +4,7 @@ mod db;
 mod fullscreen;
 mod idle;
 mod launcher;
+mod mcp;
 mod media;
 pub mod memory;
 mod notifications;
