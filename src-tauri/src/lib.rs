@@ -1,6 +1,7 @@
 mod clipboard;
 mod controls;
 mod db;
+mod app_context;
 mod fullscreen;
 mod idle;
 mod launcher;
@@ -88,6 +89,7 @@ pub fn run() {
             mcp::install_claude_mcp_bridge,
             mcp::uninstall_claude_mcp_bridge,
             mcp::answer_ai_question,
+            app_context::get_foreground_app,
             fullscreen::is_fullscreen_app_active,
             media::get_media_state,
             media::levels::start_audio_levels,
