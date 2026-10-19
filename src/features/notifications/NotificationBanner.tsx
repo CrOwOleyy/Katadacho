@@ -25,7 +25,11 @@ export function NotificationBanner({ toast, pending, showBody, onDismiss }: Noti
   return (
     <div
       role="alert"
-      onClick={onDismiss}
+      onClick={(event) => {
+        // Le clic ferme la notification et ne doit pas remonter jusqu'à la pilule, qui ouvrirait le menu.
+        event.stopPropagation();
+        onDismiss();
+      }}
       className="group flex h-full w-full cursor-pointer items-center gap-3 px-4"
     >
       <div

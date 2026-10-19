@@ -2,6 +2,7 @@ import { MemoryStick, ShieldCheck, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { BentoCard } from "../../components/ui/BentoCard";
 import { ipc } from "../../lib/ipc";
+import { pulseMood } from "../../lib/moodPulse";
 import type { CleanResult } from "../../lib/types/memory";
 
 type Running = "quick" | "deep" | null;
@@ -30,9 +31,12 @@ export function MemoryCleaner() {
     setRunning(mode);
     setError(null);
     try {
-      setResult(mode === "quick" ? await ipc.cleanMemoryQuick() : await ipc.cleanMemoryDeep());
+      const outcome = mode === "quick" ? await ipc.cleanMemoryQuick() : await ipc.cleanMemoryDeep();
+      setResult(outcome);
+      pulseMood("happy");
     } catch (reason) {
       setResult(null);
+      pulseMood("sad");
       setError(String(reason));
     } finally {
       setRunning(null);
@@ -44,9 +48,9 @@ export function MemoryCleaner() {
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 text-xs text-white/55">
           {running === "quick" && "Réduction de la mémoire des applications…"}
-          {running === "deep" && "Nettoyage profond en cours, accepte la demande d'autorisation Windows…"}
+          {running === "deep" && "Nettoyage profond en cours, accepte la demande d'autorisation…"}
           {running === null && result && <span className="text-white/80">{summary(result)}</span>}
-          {running === null && !result && !error && "Rend de la mémoire à Windows sans fermer aucune application."}
+          {running === null && !result && !error && "Rend de la mémoire au système sans fermer aucune application."}
           {running === null && error && <span className="text-red-400">{error}</span>}
         </div>
 
@@ -64,7 +68,7 @@ export function MemoryCleaner() {
             type="button"
             disabled={running !== null}
             onClick={() => void run("deep")}
-            title="Vide aussi les caches système. Windows demande l'autorisation administrateur."
+            title="Vide aussi les caches système. Une autorisation administrateur est demandée."
             className="flex items-center gap-1.5 rounded-xl bg-white/8 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:bg-white/12 hover:text-white disabled:opacity-40"
           >
             <ShieldCheck size={13} />

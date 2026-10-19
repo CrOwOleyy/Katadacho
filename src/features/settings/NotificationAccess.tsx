@@ -45,7 +45,7 @@ export function NotificationAccess() {
   return (
     <div className="flex flex-col gap-1">
       <SettingRow
-        label="Accès Windows aux notifications"
+        label="Accès aux notifications"
         description={
           access === "denied"
             ? "Autorise l'accès dans Paramètres Windows, Confidentialité et sécurité, Notifications."

@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { ipc } from "../../lib/ipc";
+import { pulseMood } from "../../lib/moodPulse";
 import type { LauncherResult } from "../../lib/types/launcher";
 import { ResultRow } from "./ResultRow";
 
@@ -46,6 +47,7 @@ export function LauncherTab({ focusToken, onDone }: LauncherTabProps) {
       onDone();
     } catch (reason) {
       setError(String(reason));
+      pulseMood("sad");
     }
   };
 

@@ -1,5 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { pulseMood } from "../lib/moodPulse";
+import type { AiNotification } from "../lib/types/ai";
 import type { NotificationToast } from "../lib/types/notifications";
 import { useSettings } from "../store/SettingsContext";
 
@@ -26,26 +28,41 @@ export function useNotifications() {
   isEnabled.current = enabled;
 
   useEffect(() => {
-    let unlisten: (() => void) | undefined;
+    const unlisteners: Array<() => void> = [];
     let active = true;
+    let aiCounter = 0;
 
-    listen<NotificationToast>("notification-arrived", (event) => {
-      if (!isEnabled.current) return;
+    const push = (toast: NotificationToast) => {
       const arrival = Date.now();
       setNow(arrival);
-      setQueue((previous) =>
-        [...previous, { ...event.payload, expiresAt: arrival + displayMs.current }].slice(-MAX_QUEUE),
-      );
-    })
-      .then((fn) => {
-        if (active) unlisten = fn;
-        else fn();
-      })
-      .catch((reason: unknown) => console.error("notification listener failed", reason));
+      setQueue((previous) => [...previous, { ...toast, expiresAt: arrival + displayMs.current }].slice(-MAX_QUEUE));
+    };
+
+    const subscribe = <T,>(event: string, handler: (payload: T) => void) => {
+      listen<T>(event, (e) => handler(e.payload))
+        .then((fn) => {
+          if (active) unlisteners.push(fn);
+          else fn();
+        })
+        .catch((reason: unknown) => console.error(`${event} listener failed`, reason));
+    };
+
+    subscribe<NotificationToast>("notification-arrived", (toast) => {
+      if (isEnabled.current) push(toast);
+    });
+
+    // Messages envoyés par Claude Desktop via le pont MCP : demandés explicitement, donc affichés
+    // même si les notifications Windows sont coupées. Les identifiants négatifs évitent tout conflit.
+    subscribe<AiNotification>("ai-notify", (message) => {
+      aiCounter += 1;
+      push({ id: -aiCounter, appName: "Claude", title: message.title, body: message.summary, createdMs: Date.now() });
+      if (message.status === "done") pulseMood("happy");
+      if (message.status === "error") pulseMood("sad");
+    });
 
     return () => {
       active = false;
-      unlisten?.();
+      unlisteners.forEach((fn) => fn());
     };
   }, []);
 
