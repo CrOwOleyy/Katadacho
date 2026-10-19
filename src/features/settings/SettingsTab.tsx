@@ -111,6 +111,13 @@ export function SettingsTab() {
                 onChange={(focusOnFullscreen) => update((s) => ({ ...s, mascot: { ...s.mascot, focusOnFullscreen } }))}
               />
             </SettingRow>
+            <SettingRow label="Visionnage" description="Vidéo ou série en cours dans un lecteur ou un site de streaming.">
+              <Toggle
+                label="Visionnage"
+                checked={settings.mascot.watchVideos}
+                onChange={(watchVideos) => update((s) => ({ ...s, mascot: { ...s.mascot, watchVideos } }))}
+              />
+            </SettingRow>
             <SettingRow label="Endormi la nuit">
               <Toggle
                 label="Endormi la nuit"
