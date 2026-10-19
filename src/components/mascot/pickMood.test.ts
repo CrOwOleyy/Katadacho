@@ -9,6 +9,7 @@ const BASE: MoodInputs = {
   timerPhase: null,
   fullscreenApp: false,
   mediaPlaying: false,
+  videoApp: false,
   userIdle: false,
   night: false,
 };
@@ -30,4 +31,12 @@ describe("pickMood", () => {
     expect(pickMood({ ...BASE, night: true })).toBe("sleepy");
   });
   it("prefers music over sleeping at night", () => expect(pickMood({ ...BASE, mediaPlaying: true, night: true })).toBe("music"));
+  it("watches while a video plays in a video app, even fullscreen", () => {
+    expect(pickMood({ ...BASE, videoApp: true, mediaPlaying: true })).toBe("watching");
+    expect(pickMood({ ...BASE, videoApp: true, mediaPlaying: true, fullscreenApp: true })).toBe("watching");
+  });
+  it("does not watch on a video app that is not playing", () => {
+    expect(pickMood({ ...BASE, videoApp: true })).toBe("idle");
+    expect(pickMood({ ...BASE, videoApp: true, mediaPlaying: true, timerRunning: true, timerPhase: "focus" })).toBe("focus");
+  });
 });

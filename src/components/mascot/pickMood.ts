@@ -12,6 +12,8 @@ export interface MoodInputs {
   /** Une application occupe tout l'écran. */
   fullscreenApp: boolean;
   mediaPlaying: boolean;
+  /** Un lecteur vidéo ou un site de streaming est au premier plan. */
+  videoApp: boolean;
   /** Personne n'utilise le clavier ni la souris. */
   userIdle: boolean;
   /** On est dans les heures de nuit réglées. */
@@ -29,6 +31,8 @@ export function pickMood(input: MoodInputs): GhostMood {
 
   const onBreak = input.timerPhase === "shortBreak" || input.timerPhase === "longBreak";
   if (input.timerRunning && input.timerPhase === "focus") return "focus";
+  // Une vidéo en cours a son propre visage, même en plein écran (sinon ce serait « concentré »).
+  if (input.videoApp && input.mediaPlaying) return "watching";
   if (input.fullscreenApp) return "focus";
   if (input.timerRunning && onBreak) return "sleepy";
   if (input.mediaPlaying) return "music";

@@ -14,6 +14,7 @@ import { TimerTab } from "../features/timer/TimerTab";
 import { useNotifications } from "../hooks/useNotifications";
 import { useAiQuestion } from "../hooks/useAiQuestion";
 import { useFullscreenApp } from "../hooks/useFullscreenApp";
+import { useVideoApp } from "../hooks/useVideoApp";
 import { useMoodPulse } from "../hooks/useMoodPulse";
 import { useSystemIdle } from "../hooks/useSystemIdle";
 import { isNight } from "../lib/night";
@@ -98,6 +99,7 @@ export function IslandApp() {
   const mascotSettings = settings.mascot;
   const moodPulse = useMoodPulse();
   const fullscreenApp = useFullscreenApp(mascotSettings.focusOnFullscreen);
+  const videoApp = useVideoApp(mascotSettings.watchVideos);
   const night =
     mascotSettings.sleepAtNight &&
     isNight(new Date().getHours(), mascotSettings.nightStartHour, mascotSettings.nightEndHour);
@@ -109,6 +111,7 @@ export function IslandApp() {
     timerRunning: timer.status === "running",
     timerPhase: timer.phase,
     fullscreenApp,
+    videoApp,
     mediaPlaying: media?.playing ?? false,
     userIdle,
     night,
