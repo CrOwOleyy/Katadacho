@@ -40,8 +40,15 @@ run_session() {
 
     "$binary" > /tmp/katadacho.log 2>&1 &
     app_pid=$!
-    sleep 15
+    # Avant le masquage automatique de l'Island (15 s par défaut).
+    sleep 6
     grim "$shot"
+    # Survol de la pilule avec le curseur virtuel de Sway : l'Island doit s'ouvrir.
+    swaymsg seat seat0 cursor set 960 18
+    sleep 1
+    grim "${shot%.png}-hover.png"
+    sleep 3
+    grim "${shot%.png}-open.png"
 
     # Une app plantée serait absente de l'arbre elle aussi : on vérifie d'abord qu'elle tourne.
     if ! kill -0 "$app_pid" 2>/dev/null; then
