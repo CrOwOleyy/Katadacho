@@ -58,10 +58,10 @@
     },
     "linux": {
       "deb": {
-        "depends": ["pulseaudio-utils | pipewire-pulse", "network-manager", "bluez", "pkexec | policykit-1"]
+        "depends": ["pulseaudio-utils | pipewire-pulse", "network-manager", "bluez", "pkexec | policykit-1", "libgtk-layer-shell0"]
       },
       "rpm": {
-        "depends": ["pulseaudio-utils", "NetworkManager", "bluez", "polkit"]
+        "depends": ["pulseaudio-utils", "NetworkManager", "bluez", "polkit", "gtk-layer-shell"]
       }
     }
   }
