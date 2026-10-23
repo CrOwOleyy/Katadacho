@@ -9,7 +9,8 @@
 
 use std::cell::RefCell;
 
-use gtk::cairo::{RectangleInt, Region};
+use gtk::cairo::{Operator, RectangleInt, Region};
+use gtk::glib::Propagation;
 use gtk::prelude::*;
 use gtk_layer_shell::{Edge, KeyboardMode, Layer, LayerShell};
 use tauri::{AppHandle, WebviewWindow};
@@ -45,6 +46,15 @@ pub fn install(window: &WebviewWindow) -> bool {
         layer.set_visual(Some(&visual));
     }
     layer.set_app_paintable(true);
+    // Efface la fenêtre avant chaque dessin, comme le fait Tao pour ses fenêtres transparentes :
+    // sinon chaque étape d'une animation reste peinte et laisse une traînée.
+    layer.connect_draw(|_, context| {
+        context.set_source_rgba(0.0, 0.0, 0.0, 0.0);
+        context.set_operator(Operator::Source);
+        let _ = context.paint();
+        context.set_operator(Operator::Over);
+        Propagation::Proceed
+    });
     layer.set_decorated(false);
     original.remove(&content);
     layer.add(&content);
