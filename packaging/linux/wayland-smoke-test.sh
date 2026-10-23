@@ -36,9 +36,14 @@ run_session() {
     SWAYSOCK=$(find "$XDG_RUNTIME_DIR" /tmp -maxdepth 1 -name 'sway-ipc.*' 2>/dev/null | head -n 1)
 
     "$binary" > /tmp/katadacho.log 2>&1 &
+    app_pid=$!
     sleep 15
     grim "$shot"
 
+    # Une app plantée serait absente de l'arbre elle aussi : on vérifie d'abord qu'elle tourne.
+    if ! kill -0 "$app_pid" 2>/dev/null; then
+        echo "ÉCHEC : Katadacho s'est arrêté"; tail -n 30 /tmp/katadacho.log; exit 1
+    fi
     # Une surface layer-shell n'apparaît pas dans l'arbre des fenêtres de Sway.
     if swaymsg -t get_tree | grep -qi '"app_id": "[^"]*katadacho'; then
         echo "ÉCHEC : l'Island est rangée comme une fenêtre ordinaire"
