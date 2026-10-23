@@ -23,7 +23,10 @@ client.focused #ffcc00 #ffcc00 #000000 #ffcc00 #ffcc00
 CONF
 
 run_session() {
-    sway -c /tmp/sway-test.conf > /tmp/sway.log 2>&1 &
+    # Fedora donne à sway une capacité de fichier (cap_sys_nice) qu'un conteneur refuse : une copie
+    # du binaire en est dépourvue.
+    cp "$(command -v sway)" /tmp/sway-test
+    /tmp/sway-test -c /tmp/sway-test.conf > /tmp/sway.log 2>&1 &
     for _ in $(seq 50); do
         socket=$(find "$XDG_RUNTIME_DIR" -maxdepth 1 -name 'wayland-*' ! -name '*.lock' | head -n 1)
         [ -n "$socket" ] && break
