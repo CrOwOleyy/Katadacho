@@ -45,11 +45,7 @@ pub fn run() {
             mcp::bridge::start(app.handle().clone(), data_dir.clone());
             app.manage(state::AppPaths { data_dir });
             tray::create(app)?;
-            window::position_island(app)?;
-            if let Some(island) = app.get_webview_window(window::ISLAND_LABEL) {
-                island.set_ignore_cursor_events(true)?;
-            }
-            click_through::start(app.handle().clone());
+            window::prepare_island(app)?;
             clipboard::start(app.handle().clone());
             launcher::start_indexing(app.handle().clone());
             let launcher_hotkey = app.state::<settings::SettingsState>().snapshot().hotkeys.launcher;
