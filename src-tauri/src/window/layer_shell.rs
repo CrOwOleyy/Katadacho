@@ -28,7 +28,8 @@ thread_local! {
 /// Transforme l'Island en surface layer-shell. Retourne faux quand le compositeur ne le permet pas
 /// (GNOME, session X11) : la fenêtre ordinaire est alors gardée. Doit tourner sur le thread principal.
 pub fn install(window: &WebviewWindow) -> bool {
-    if !gtk_layer_shell::is_supported() {
+    // Échappatoire si un compositeur gère mal layer-shell : la fenêtre ordinaire est gardée.
+    if std::env::var_os("KATADACHO_NO_LAYER_SHELL").is_some() || !gtk_layer_shell::is_supported() {
         return false;
     }
     let (Ok(original), Ok(content)) = (window.gtk_window(), window.default_vbox()) else {
