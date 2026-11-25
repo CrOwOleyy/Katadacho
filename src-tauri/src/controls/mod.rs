@@ -1,5 +1,6 @@
 #[cfg(not(windows))]
 mod linux;
+mod mixer;
 mod parse;
 #[cfg(windows)]
 pub mod audio;
@@ -15,7 +16,7 @@ pub mod types;
 #[cfg(windows)]
 pub mod wifi;
 
-pub use types::{AudioState, NetworkBluetoothState};
+pub use types::{AppVolume, AudioState, NetworkBluetoothState};
 
 async fn blocking<T, F>(task: F) -> Result<T, String>
 where

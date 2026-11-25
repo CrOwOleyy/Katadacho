@@ -28,3 +28,14 @@ pub struct NetworkBluetoothState {
     pub bluetooth_enabled: Option<bool>,
     pub bluetooth_devices: Vec<String>,
 }
+
+/// Volume d'une application dans le mixeur.
+#[derive(Serialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct AppVolume {
+    /// Identifiant stable de l'application, renvoyé tel quel pour la régler.
+    pub id: String,
+    pub name: String,
+    pub volume: u8,
+    pub muted: bool,
+}
