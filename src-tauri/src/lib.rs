@@ -20,7 +20,7 @@ mod timer;
 mod tray;
 mod window;
 
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 use window::click_through::{self, ClickThroughState};
 
@@ -28,7 +28,11 @@ use window::click_through::{self, ClickThroughState};
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_autostart::Builder::new().build())
-        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
+        // Relancer Katadacho alors qu'il tourne déjà ouvre l'Island de l'instance en cours, au lieu de
+        // ne rien faire de visible.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let _ = app.emit(tray::EVENT_ISLAND_OPEN, None::<&str>);
+        }))
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .manage(ClickThroughState::default())
