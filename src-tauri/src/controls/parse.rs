@@ -67,7 +67,9 @@ pub fn sink_inputs(json: &str) -> Result<Vec<(u32, Stream)>, String> {
                 .or_else(|| binary.map(display_name))
                 .unwrap_or_else(|| "Application".to_string());
             let muted = input["mute"].as_bool().unwrap_or(false);
-            Some((index, Stream { key, name, volume: sink_volume(input), muted }))
+            // Nom d'icône du thème (« firefox »), pas encore un fichier : il est résolu ensuite.
+            let icon_path = property("application.icon_name").or(binary).map(str::to_string);
+            Some((index, Stream { key, name, volume: sink_volume(input), muted, icon_path }))
         })
         .collect())
 }

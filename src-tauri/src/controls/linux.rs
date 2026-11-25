@@ -4,12 +4,13 @@
 
 use std::fs;
 use std::io::ErrorKind;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use super::mixer::{self, Stream};
 use super::parse;
 use super::types::{AppVolume, AudioState, NetworkBluetoothState};
+use crate::icon_theme;
 
 const BACKLIGHT_DIR: &str = "/sys/class/backlight";
 
@@ -165,7 +166,20 @@ fn sink_inputs() -> Result<Vec<(u32, Stream)>, String> {
 }
 
 pub fn get_app_volumes() -> Result<Vec<AppVolume>, String> {
-    Ok(mixer::group(sink_inputs()?.into_iter().map(|(_, stream)| stream).collect()))
+    // pactl donne un nom d'icône du thème (« firefox ») : il devient ici un fichier PNG.
+    let roots = icon_theme::icon_roots();
+    let pixmaps = Path::new(icon_theme::PIXMAPS_DIR);
+    let streams = sink_inputs()?
+        .into_iter()
+        .map(|(_, mut stream)| {
+            stream.icon_path = stream
+                .icon_path
+                .and_then(|name| icon_theme::find_png(&name, &roots, pixmaps))
+                .map(|path| path.to_string_lossy().into_owned());
+            stream
+        })
+        .collect();
+    Ok(mixer::group(streams))
 }
 
 fn matching(id: &str) -> Result<Vec<(u32, Stream)>, String> {
