@@ -44,7 +44,7 @@ export function useAiQuestion() {
       if (!question) return;
       try {
         const delivered = await ipc.answerAiQuestion(question.id, option);
-        if (!delivered) setError("La question a expiré");
+        if (!delivered) setError("The question expired");
         setQuestion(null);
       } catch (reason) {
         setError(String(reason));
