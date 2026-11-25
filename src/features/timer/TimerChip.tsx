@@ -24,7 +24,7 @@ export function TimerChip({ snapshot, flashing }: TimerChipProps) {
     >
       <Icon size={12} />
       <span className="font-mono text-[11px] text-white">
-        {snapshot.status === "ready" ? "Prêt" : formatClock(snapshot.remainingSeconds)}
+        {snapshot.status === "ready" ? "Ready" : formatClock(snapshot.remainingSeconds)}
       </span>
     </motion.div>
   );

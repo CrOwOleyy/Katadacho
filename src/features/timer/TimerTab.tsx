@@ -45,15 +45,15 @@ export function TimerTab({ snapshot, finished }: TimerTabProps) {
   const color = phaseColor(active ? snapshot.phase : "focus");
 
   return (
-    <BentoCard title="Minuteur" icon={<Timer size={14} />}>
+    <BentoCard title="Timer" icon={<Timer size={14} />}>
       <div className="flex items-center gap-8">
         <ProgressRing percent={percent} color={color}>
           <span className="font-mono text-3xl font-semibold">{formatClock(shownSeconds)}</span>
           <span className="mt-1 text-xs text-white/55">
-            {active && snapshot.phase ? PHASE_LABEL[snapshot.phase] : mode === "pomodoro" ? "Concentration" : "Minuteur"}
+            {active && snapshot.phase ? PHASE_LABEL[snapshot.phase] : mode === "pomodoro" ? "Focus" : "Timer"}
           </span>
           {mode === "pomodoro" && (
-            <div className="mt-2 flex gap-1.5" aria-label="Séances de concentration du cycle">
+            <div className="mt-2 flex gap-1.5" aria-label="Focus sessions in this cycle">
               {Array.from({ length: settings.timer.sessionsBeforeLongBreak }, (_, index) => (
                 <span
                   key={index}
@@ -79,16 +79,16 @@ export function TimerTab({ snapshot, finished }: TimerTabProps) {
                   mode === item ? "bg-white/15 text-white" : "text-white/50 hover:text-white"
                 } ${active && mode !== item ? "opacity-40" : ""}`}
               >
-                {item === "pomodoro" ? "Pomodoro" : "Minuteur"}
+                {item === "pomodoro" ? "Pomodoro" : "Timer"}
               </button>
             ))}
           </div>
 
           {!active && mode === "pomodoro" && (
             <p className="text-xs leading-relaxed text-white/55">
-              {settings.timer.focusMinutes} min de concentration, {settings.timer.shortBreakMinutes} min de pause,
-              puis {settings.timer.longBreakMinutes} min de pause longue toutes les{" "}
-              {settings.timer.sessionsBeforeLongBreak} séances. Les durées se règlent dans Réglages.
+              {settings.timer.focusMinutes} min of focus, {settings.timer.shortBreakMinutes} min break,
+              then a {settings.timer.longBreakMinutes} min long break every{" "}
+              {settings.timer.sessionsBeforeLongBreak} sessions. Durations are set in Settings.
             </p>
           )}
 
@@ -109,7 +109,7 @@ export function TimerTab({ snapshot, finished }: TimerTabProps) {
                 ))}
               </div>
               <label className="flex items-center gap-2 text-xs text-white/55">
-                Durée personnalisée
+                Custom duration
                 <input
                   type="number"
                   min={1}
@@ -127,8 +127,8 @@ export function TimerTab({ snapshot, finished }: TimerTabProps) {
 
           {finished && (
             <p className="text-xs font-medium" style={{ color: phaseColor(finished.nextPhase ?? finished.phase) }}>
-              {PHASE_LABEL[finished.phase]} terminée
-              {finished.nextPhase ? ` : place à ${PHASE_LABEL[finished.nextPhase].toLowerCase()}.` : "."}
+              {PHASE_LABEL[finished.phase]} finished
+              {finished.nextPhase ? `, next up: ${PHASE_LABEL[finished.nextPhase].toLowerCase()}.` : "."}
             </p>
           )}
 
@@ -140,7 +140,7 @@ export function TimerTab({ snapshot, finished }: TimerTabProps) {
                 className="flex items-center gap-1.5 rounded-xl bg-[color:var(--accent-color)] px-4 py-2 text-sm font-medium text-black transition-transform hover:scale-[1.03]"
               >
                 <Play size={14} className="fill-current" />
-                Démarrer
+                Start
               </button>
             )}
 
@@ -162,7 +162,7 @@ export function TimerTab({ snapshot, finished }: TimerTabProps) {
                 className="flex items-center gap-1.5 rounded-xl bg-[color:var(--accent-color)] px-4 py-2 text-sm font-medium text-black transition-transform hover:scale-[1.03]"
               >
                 <Play size={14} className="fill-current" />
-                {snapshot.status === "ready" ? "Démarrer la phase" : "Reprendre"}
+                {snapshot.status === "ready" ? "Start phase" : "Resume"}
               </button>
             )}
 
@@ -173,7 +173,7 @@ export function TimerTab({ snapshot, finished }: TimerTabProps) {
                 className="flex items-center gap-1.5 rounded-xl bg-white/8 px-3 py-2 text-xs text-white/70 transition-colors hover:bg-white/12 hover:text-white"
               >
                 <SkipForward size={13} />
-                Passer
+                Skip
               </button>
             )}
 
@@ -184,7 +184,7 @@ export function TimerTab({ snapshot, finished }: TimerTabProps) {
                 className="flex items-center gap-1.5 rounded-xl bg-white/8 px-3 py-2 text-xs text-white/70 transition-colors hover:bg-white/12 hover:text-white"
               >
                 <RotateCcw size={13} />
-                Réinitialiser
+                Reset
               </button>
             )}
           </div>
