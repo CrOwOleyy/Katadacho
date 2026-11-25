@@ -67,6 +67,13 @@ fn file_description(path: &str) -> Option<String> {
     (!description.is_empty()).then_some(description)
 }
 
+/// Le mixeur de volume de Windows : son icône (un haut-parleur) représente les sons système.
+fn system_sounds_icon() -> Option<String> {
+    let root = std::env::var("SystemRoot").ok()?;
+    let path = format!(r"{root}\System32\SndVol.exe");
+    std::path::Path::new(&path).exists().then_some(path)
+}
+
 fn describe(control: &IAudioSessionControl) -> WinResult<Option<Session>> {
     if unsafe { control.GetState()? } == AudioSessionStateExpired {
         return Ok(None);
@@ -76,25 +83,25 @@ fn describe(control: &IAudioSessionControl) -> WinResult<Option<Session>> {
     let level = (unsafe { volume.GetMasterVolume()? } * 100.0).round().clamp(0.0, 100.0) as u8;
     let muted = unsafe { volume.GetMute()? }.as_bool();
 
-    let (key, name) = if unsafe { control2.IsSystemSoundsSession() } == S_OK {
-        (SYSTEM_SOUNDS_KEY.to_string(), "Sons système".to_string())
+    let (key, name, icon_path) = if unsafe { control2.IsSystemSoundsSession() } == S_OK {
+        (SYSTEM_SOUNDS_KEY.to_string(), "Sons système".to_string(), system_sounds_icon())
     } else {
         let pid = unsafe { control2.GetProcessId()? };
         match executable_path(pid) {
             Some(path) => {
                 let executable = path.rsplit('\\').next().unwrap_or(&path).to_lowercase();
-                (executable, file_description(&path).unwrap_or_else(|| display_name(&path)))
+                (executable, file_description(&path).unwrap_or_else(|| display_name(&path)), Some(path))
             }
             // Processus inaccessible : on garde la session, identifiée par son instance.
             None => {
                 let instance = take_pwstr(unsafe { control2.GetSessionInstanceIdentifier()? })?;
                 let label = take_pwstr(unsafe { control.GetDisplayName()? }).unwrap_or_default();
                 let name = if label.is_empty() || label.starts_with('@') { "Application".to_string() } else { label };
-                (instance, name)
+                (instance, name, None)
             }
         }
     };
-    Ok(Some(Session { stream: Stream { key, name, volume: level, muted }, volume }))
+    Ok(Some(Session { stream: Stream { key, name, volume: level, muted, icon_path }, volume }))
 }
 
 /// Sessions du périphérique de sortie par défaut. Le COM doit être initialisé.
@@ -159,9 +166,15 @@ mod tests {
         let _com = ComGuard::new().expect("COM");
         let apps = group(streams().expect("sessions audio"));
         for app in &apps {
-            println!("{} | {} | {} % | muet : {}", app.id, app.name, app.volume, app.muted);
+            println!("{} | {} | {} % | muet : {} | icône : {:?}", app.id, app.name, app.volume, app.muted, app.icon_path);
         }
         assert!(!apps.is_empty(), "au moins les sons système existent");
+        // Chaque icône doit pouvoir être extraite par la commande du lanceur.
+        let cache = std::env::temp_dir().join("katadacho-mixer-icons");
+        for path in apps.iter().filter_map(|app| app.icon_path.as_deref()) {
+            let icon = crate::launcher::icons::icon_base64(path, &cache).expect("icône");
+            assert!(icon.len() > 100, "icône vide pour {path}");
+        }
         // Réapplique le volume actuel : exerce l'écriture sans rien changer pour l'utilisateur.
         for app in &apps {
             set_volume(&app.id, app.volume).expect("réglage du volume");
