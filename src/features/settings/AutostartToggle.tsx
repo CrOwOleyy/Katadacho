@@ -42,8 +42,8 @@ export function AutostartToggle() {
 
   return (
     <div className="flex flex-col gap-1">
-      <SettingRow label="Lancer au démarrage de la session" description="Katadacho démarre avec ta session.">
-        <Toggle label="Lancer au démarrage de la session" checked={enabled} disabled={busy} onChange={(next) => void toggle(next)} />
+      <SettingRow label="Launch at sign-in" description="Katadacho starts with your session.">
+        <Toggle label="Launch at sign-in" checked={enabled} disabled={busy} onChange={(next) => void toggle(next)} />
       </SettingRow>
       {error && <p className="truncate text-[10px] text-red-400">{error}</p>}
     </div>

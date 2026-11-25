@@ -15,10 +15,10 @@ function summarize(statuses: ClaudeConfigStatus[]): Summary {
 }
 
 const LABEL: Record<Summary, string> = {
-  "not-found": "Claude Desktop introuvable",
-  "not-installed": "Non connecté",
-  stale: "Connecté, mais à mettre à jour",
-  installed: "Connecté",
+  "not-found": "Claude Desktop not found",
+  "not-installed": "Not connected",
+  stale: "Connected, update needed",
+  installed: "Connected",
 };
 
 /** Branche ou débranche Katadacho de Claude Desktop, sans clé d'API, par un serveur MCP local. */
@@ -61,7 +61,7 @@ export function ClaudeBridgeSetting() {
   return (
     <BentoCard title="Claude Desktop" icon={<Bot size={14} />}>
       <p className="text-[11px] leading-snug text-white/45">
-        Claude peut t'envoyer des notifications et te poser des questions dans l'Island, sans clé d'API.
+        Claude can send you notifications and ask you questions in the island, with no API key.
       </p>
       <div className="flex items-center justify-between gap-3">
         <span
@@ -76,20 +76,20 @@ export function ClaudeBridgeSetting() {
             <button
               type="button"
               disabled={busy}
-              onClick={() => void run(ipc.installClaudeMcpBridge, "Connecté. Redémarre Claude Desktop pour l'activer.")}
+              onClick={() => void run(ipc.installClaudeMcpBridge, "Connected. Restart Claude Desktop to turn it on.")}
               className="rounded-lg bg-[color:var(--accent-color)]/25 px-3 py-1 text-xs font-medium hover:bg-[color:var(--accent-color)]/35 disabled:opacity-50"
             >
-              {summary === "stale" ? "Mettre à jour" : connected ? "Reconnecter" : "Connecter"}
+              {summary === "stale" ? "Update" : connected ? "Reconnect" : "Connect"}
             </button>
           )}
           {connected && (
             <button
               type="button"
               disabled={busy}
-              onClick={() => void run(ipc.uninstallClaudeMcpBridge, "Déconnecté. Redémarre Claude Desktop.")}
+              onClick={() => void run(ipc.uninstallClaudeMcpBridge, "Disconnected. Restart Claude Desktop.")}
               className="rounded-lg bg-white/8 px-3 py-1 text-xs text-white/70 hover:bg-white/12 hover:text-white disabled:opacity-50"
             >
-              Déconnecter
+              Disconnect
             </button>
           )}
         </div>
@@ -97,7 +97,7 @@ export function ClaudeBridgeSetting() {
       {message && <p className="text-[11px] text-emerald-300/80">{message}</p>}
       {error && <p className="text-[11px] text-red-400">{error}</p>}
       {summary === "not-found" && (
-        <p className="text-[11px] text-white/45">Lance Claude Desktop au moins une fois, puis reviens ici.</p>
+        <p className="text-[11px] text-white/45">Open Claude Desktop at least once, then come back here.</p>
       )}
     </BentoCard>
   );
