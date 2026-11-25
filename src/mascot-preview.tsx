@@ -9,7 +9,7 @@ import { GHOST_MOODS } from "./components/mascot/mood";
 function Preview() {
   return (
     <div style={{ background: "#08080a", color: "#f4f4f5", minHeight: "100vh", padding: 24, overflow: "auto", userSelect: "auto" }}>
-      <h1 style={{ fontSize: 14, opacity: 0.6, marginBottom: 16 }}>Mascotte : humeurs et tailles</h1>
+      <h1 style={{ fontSize: 14, opacity: 0.6, marginBottom: 16 }}>Mascot: moods and sizes</h1>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
         {GHOST_MOODS.map((mood) => (
@@ -25,7 +25,7 @@ function Preview() {
         ))}
       </div>
 
-      <h2 style={{ fontSize: 14, opacity: 0.6, margin: "24px 0 8px" }}>Dans la pilule (36 px de haut)</h2>
+      <h2 style={{ fontSize: 14, opacity: 0.6, margin: "24px 0 8px" }}>In the pill (36 px tall)</h2>
       <div
         style={{
           display: "inline-flex",
