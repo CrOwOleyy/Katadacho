@@ -33,4 +33,6 @@ export interface AppVolume {
   name: string;
   volume: number;
   muted: boolean;
+  /** Fichier dont le système tire l'icône de l'application, quand elle en a une. */
+  iconPath: string | null;
 }
