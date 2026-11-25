@@ -48,11 +48,11 @@ export function useSystemStats() {
         }
       })
       .catch((reason: unknown) => {
-        if (active) setError(`Écoute des métriques impossible : ${String(reason)}`);
+        if (active) setError(`Cannot listen to metrics: ${String(reason)}`);
       });
 
     ipc.startSystemStats().catch((reason: unknown) => {
-      if (active) setError(`Démarrage de la collecte impossible : ${String(reason)}`);
+      if (active) setError(`Cannot start collecting metrics: ${String(reason)}`);
     });
 
     return () => {

@@ -17,7 +17,7 @@ export function DashboardTab() {
     return error ? (
       <p className="text-sm text-red-400">{error}</p>
     ) : (
-      <p className="text-sm text-white/50">Lecture des métriques…</p>
+      <p className="text-sm text-white/50">Reading metrics…</p>
     );
   }
 
@@ -34,21 +34,21 @@ export function DashboardTab() {
         <RingGauge
           value={stats.memory.percent}
           label="RAM"
-          sublabel={`${formatGb(stats.memory.usedGb)} / ${formatGb(stats.memory.totalGb)} Go`}
+          sublabel={`${formatGb(stats.memory.usedGb)} / ${formatGb(stats.memory.totalGb)} GB`}
         />
         <RingGauge
           value={stats.gpu?.usage ?? 0}
           label="GPU"
           sublabel={
             stats.gpu
-              ? `${formatGb(stats.gpu.vramUsedMb / 1024)} / ${formatGb(stats.gpu.vramTotalMb / 1024)} Go VRAM`
-              : "Non détecté"
+              ? `${formatGb(stats.gpu.vramUsedMb / 1024)} / ${formatGb(stats.gpu.vramTotalMb / 1024)} GB VRAM`
+              : "Not detected"
           }
         />
         <RingGauge
           value={diskPercent}
-          label="Disque"
-          sublabel={`${formatGb(stats.disk.usedGb)} / ${formatGb(stats.disk.totalGb)} Go`}
+          label="Disk"
+          sublabel={`${formatGb(stats.disk.usedGb)} / ${formatGb(stats.disk.totalGb)} GB`}
         />
       </div>
 
@@ -62,16 +62,16 @@ export function DashboardTab() {
       <MemoryCleaner />
 
       <div className="grid grid-cols-12 gap-3">
-        <BentoCard title="Réseau" icon={<Activity size={14} />} className="col-span-3">
+        <BentoCard title="Network" icon={<Activity size={14} />} className="col-span-3">
           <div className="flex flex-col gap-1.5 font-mono text-xs">
-            <span className="text-white/60">↓ {stats.network.downloadMbS.toFixed(2)} Mo/s</span>
-            <span className="text-white/60">↑ {stats.network.uploadMbS.toFixed(2)} Mo/s</span>
-            <span className="text-white/60">Lecture disque {stats.disk.readMbS.toFixed(2)} Mo/s</span>
-            <span className="text-white/60">Écriture disque {stats.disk.writeMbS.toFixed(2)} Mo/s</span>
+            <span className="text-white/60">↓ {stats.network.downloadMbS.toFixed(2)} MB/s</span>
+            <span className="text-white/60">↑ {stats.network.uploadMbS.toFixed(2)} MB/s</span>
+            <span className="text-white/60">Disk read {stats.disk.readMbS.toFixed(2)} MB/s</span>
+            <span className="text-white/60">Disk write {stats.disk.writeMbS.toFixed(2)} MB/s</span>
           </div>
         </BentoCard>
 
-        <BentoCard title="Top processus" icon={<Activity size={14} />} className="col-span-5">
+        <BentoCard title="Top processes" icon={<Activity size={14} />} className="col-span-5">
           <ProcessList processes={stats.processes} onKill={(pid) => ipc.killProcess(pid)} />
         </BentoCard>
 
