@@ -17,7 +17,7 @@ fn enumerator() -> WinResult<IMMDeviceEnumerator> {
 }
 
 /// Convertit un PWSTR alloué par COM en String puis libère la mémoire.
-fn take_pwstr(id: PWSTR) -> WinResult<String> {
+pub(super) fn take_pwstr(id: PWSTR) -> WinResult<String> {
     let text = unsafe { id.to_string() }.map_err(|_| windows::core::Error::from(windows::Win32::Foundation::E_FAIL))?;
     unsafe { CoTaskMemFree(Some(id.0 as *const std::ffi::c_void)) };
     Ok(text)
