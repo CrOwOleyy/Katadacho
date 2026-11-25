@@ -4,6 +4,7 @@ mod com;
 mod controls;
 mod db;
 mod fullscreen;
+mod icon_theme;
 mod idle;
 mod launcher;
 pub mod mcp;
