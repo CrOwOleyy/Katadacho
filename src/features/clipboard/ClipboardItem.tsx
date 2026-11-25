@@ -14,12 +14,12 @@ interface ClipboardItemProps {
 
 function relativeTime(timestamp: number): string {
   const seconds = Math.max(0, Math.round((Date.now() - timestamp) / 1000));
-  if (seconds < 60) return "à l'instant";
+  if (seconds < 60) return "just now";
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `il y a ${minutes} min`;
+  if (minutes < 60) return `${minutes} min ago`;
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `il y a ${hours} h`;
-  return `il y a ${Math.round(hours / 24)} j`;
+  if (hours < 24) return `${hours} h ago`;
+  return `${Math.round(hours / 24)} d ago`;
 }
 
 function Preview({ item }: { item: Item }) {
@@ -37,7 +37,7 @@ function Preview({ item }: { item: Item }) {
     return (
       <img
         src={`data:image/png;base64,${item.thumbnailBase64}`}
-        alt="Image copiée"
+        alt="Copied image"
         className="h-12 w-20 shrink-0 rounded-md bg-white/5 object-cover"
       />
     );
@@ -66,11 +66,11 @@ function Preview({ item }: { item: Item }) {
 }
 
 function subtitle(item: Item, secretTtlMinutes: number): string {
-  const origin = `${item.sourceAppName ?? "Inconnu"} · ${relativeTime(item.createdAt)}`;
+  const origin = `${item.sourceAppName ?? "Unknown"} · ${relativeTime(item.createdAt)}`;
   if (!item.isSensitive) return origin;
-  if (item.isPinned) return `Secret épinglé · ${origin}`;
+  if (item.isPinned) return `Pinned secret · ${origin}`;
   const minutesLeft = Math.max(0, Math.ceil((item.createdAt + secretTtlMinutes * 60_000 - Date.now()) / 60_000));
-  return `Secret, effacé dans ${minutesLeft} min · ${origin}`;
+  return `Secret, erased in ${minutesLeft} min · ${origin}`;
 }
 
 export function ClipboardItem({ item, copied, onCopy, onPaste, onTogglePin, onDelete, secretTtlMinutes }: ClipboardItemProps) {
@@ -87,7 +87,7 @@ export function ClipboardItem({ item, copied, onCopy, onPaste, onTogglePin, onDe
       <div className="min-w-0 flex-1">
         <Preview item={item} />
         <p className="mt-1 text-[10px] text-white/40">
-          {copied ? "Copié" : subtitle(item, secretTtlMinutes)}
+          {copied ? "Copied" : subtitle(item, secretTtlMinutes)}
         </p>
       </div>
 
@@ -100,11 +100,11 @@ export function ClipboardItem({ item, copied, onCopy, onPaste, onTogglePin, onDe
           }}
           className="rounded-md bg-[color:var(--accent-color)]/20 px-2 py-0.5 text-[10px] font-medium hover:bg-[color:var(--accent-color)]/35"
         >
-          Coller
+          Paste
         </button>
         <button
           type="button"
-          aria-label={item.isPinned ? "Désépingler" : "Épingler"}
+          aria-label={item.isPinned ? "Unpin" : "Pin"}
           onClick={(event) => {
             event.stopPropagation();
             onTogglePin();
@@ -115,7 +115,7 @@ export function ClipboardItem({ item, copied, onCopy, onPaste, onTogglePin, onDe
         </button>
         <button
           type="button"
-          aria-label="Supprimer"
+          aria-label="Delete"
           onClick={(event) => {
             event.stopPropagation();
             onDelete();
