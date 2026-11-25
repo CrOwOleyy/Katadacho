@@ -29,9 +29,9 @@ function AppIcon({ app }: { app: AppVolume }) {
 /** Volume de chaque application qui joue du son, réglable séparément du volume principal. */
 export function MixerCard({ apps, onVolume, onToggleMute }: MixerCardProps) {
   return (
-    <BentoCard title="Mixeur" icon={<SlidersHorizontal size={14} />} className="col-span-6">
+    <BentoCard title="Mixer" icon={<SlidersHorizontal size={14} />} className="col-span-6">
       {apps.length === 0 ? (
-        <p className="text-sm text-white/45">Aucune application ne joue de son</p>
+        <p className="text-sm text-white/45">No app is playing sound</p>
       ) : (
         <ul className="flex flex-col gap-2.5">
           {apps.map((app) => (
@@ -43,12 +43,12 @@ export function MixerCard({ apps, onVolume, onToggleMute }: MixerCardProps) {
               <button
                 type="button"
                 onClick={() => onToggleMute(app.id)}
-                aria-label={app.muted ? `Réactiver le son de ${app.name}` : `Couper le son de ${app.name}`}
+                aria-label={app.muted ? `Unmute ${app.name}` : `Mute ${app.name}`}
                 className="rounded-lg p-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
               >
                 {app.muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
               </button>
-              <Slider value={app.volume} label={`Volume de ${app.name}`} onCommit={(level) => onVolume(app.id, level)} />
+              <Slider value={app.volume} label={`${app.name} volume`} onCommit={(level) => onVolume(app.id, level)} />
               <span className="w-9 text-right font-mono text-xs text-white/60">{app.volume}</span>
             </li>
           ))}

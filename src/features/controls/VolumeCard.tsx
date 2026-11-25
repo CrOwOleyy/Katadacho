@@ -18,14 +18,14 @@ export function VolumeCard({ state, onVolume, onToggleMute, onSelectDevice }: Vo
         <button
           type="button"
           onClick={onToggleMute}
-          aria-label={state.muted ? "Réactiver le son" : "Couper le son"}
+          aria-label={state.muted ? "Unmute" : "Mute"}
           className="rounded-lg p-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
         >
           {state.muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </button>
         <Slider
           value={state.volume}
-          label="Volume principal"
+          label="Main volume"
           onCommit={onVolume}
         />
         <span className="w-9 text-right font-mono text-xs text-white/60">{state.volume}</span>

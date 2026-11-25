@@ -87,8 +87,8 @@ export function MediaCard() {
 
   if (!media) {
     return (
-      <BentoCard title="Média" icon={<Music size={14} />} className="col-span-4">
-        <p className="text-sm text-white/45">Aucun média en cours de lecture</p>
+      <BentoCard title="Media" icon={<Music size={14} />} className="col-span-4">
+        <p className="text-sm text-white/45">Nothing is playing</p>
       </BentoCard>
     );
   }
@@ -98,7 +98,7 @@ export function MediaCard() {
   const playing = position?.playing ?? media.playing;
 
   return (
-    <BentoCard title="Média" icon={<Music size={14} />} className="col-span-4">
+    <BentoCard title="Media" icon={<Music size={14} />} className="col-span-4">
       <div className="flex items-center gap-4">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/10">
           {media.coverBase64 ? (
@@ -122,7 +122,7 @@ export function MediaCard() {
             <span className="w-9 text-right font-mono text-[10px] text-white/50">{formatTime(seconds)}</span>
             <div
               role="slider"
-              aria-label="Position dans le morceau"
+              aria-label="Track position"
               aria-valuemin={0}
               aria-valuemax={duration ?? 0}
               aria-valuenow={Math.floor(seconds)}
@@ -140,7 +140,7 @@ export function MediaCard() {
           <div className="flex items-center gap-1">
             <button
               type="button"
-              aria-label="Piste précédente"
+              aria-label="Previous track"
               onClick={() => void run(ipc.mediaPrevious)}
               className="rounded-full p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
             >
@@ -148,7 +148,7 @@ export function MediaCard() {
             </button>
             <button
               type="button"
-              aria-label={playing ? "Pause" : "Lecture"}
+              aria-label={playing ? "Pause" : "Play"}
               onClick={() => void run(ipc.mediaTogglePlayPause)}
               className="rounded-full bg-white p-2 text-black transition-transform hover:scale-105"
             >
@@ -156,7 +156,7 @@ export function MediaCard() {
             </button>
             <button
               type="button"
-              aria-label="Piste suivante"
+              aria-label="Next track"
               onClick={() => void run(ipc.mediaNext)}
               className="rounded-full p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
             >

@@ -11,7 +11,7 @@ export function AudioDevicePicker({ devices, activeId, onSelect }: AudioDevicePi
   return (
     <div className="relative">
       <select
-        aria-label="Périphérique de sortie audio"
+        aria-label="Audio output device"
         value={activeId ?? ""}
         disabled={devices.length === 0}
         onChange={(event) => onSelect(event.target.value)}
