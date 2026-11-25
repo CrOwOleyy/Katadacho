@@ -88,12 +88,12 @@ mod tests {
     #[test]
     fn apps_are_sorted_by_name_with_system_sounds_last() {
         let apps = group(vec![
-            stream(SYSTEM_SOUNDS_KEY, "Sons système", 100, false),
+            stream(SYSTEM_SOUNDS_KEY, "System sounds", 100, false),
             stream("vlc.exe", "VLC", 60, false),
             stream("discord.exe", "discord", 50, false),
         ]);
         let names: Vec<&str> = apps.iter().map(|app| app.name.as_str()).collect();
-        assert_eq!(names, vec!["discord", "VLC", "Sons système"]);
+        assert_eq!(names, vec!["discord", "VLC", "System sounds"]);
     }
 
     #[test]
