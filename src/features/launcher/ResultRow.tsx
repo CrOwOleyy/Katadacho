@@ -1,10 +1,7 @@
 import { AppWindow, File, Folder } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { ipc } from "../../lib/ipc";
+import { useEffect, useRef } from "react";
+import { useAppIcon } from "../../hooks/useAppIcon";
 import type { LauncherKind, LauncherResult } from "../../lib/types/launcher";
-
-/** Cache mémoire des icônes déjà demandées, pour ne pas les redemander à chaque frappe. */
-const iconCache = new Map<string, string | null>();
 
 const KIND_LABEL: Record<LauncherKind, string> = {
   app: "Application",
@@ -18,33 +15,6 @@ function FallbackIcon({ kind }: { kind: LauncherKind }) {
   return <Icon size={20} className="text-white/50" />;
 }
 
-function useIcon(path: string): string | null {
-  const [icon, setIcon] = useState<string | null>(iconCache.get(path) ?? null);
-
-  useEffect(() => {
-    if (iconCache.has(path)) {
-      setIcon(iconCache.get(path) ?? null);
-      return;
-    }
-    let active = true;
-    ipc
-      .getLauncherIcon(path)
-      .then((base64) => {
-        iconCache.set(path, base64);
-        if (active) setIcon(base64);
-      })
-      .catch(() => {
-        // Pas d'icône disponible : on mémorise l'échec et on garde l'icône générique.
-        iconCache.set(path, null);
-      });
-    return () => {
-      active = false;
-    };
-  }, [path]);
-
-  return icon;
-}
-
 interface ResultRowProps {
   result: LauncherResult;
   selected: boolean;
@@ -53,7 +23,7 @@ interface ResultRowProps {
 }
 
 export function ResultRow({ result, selected, onActivate, onHover }: ResultRowProps) {
-  const icon = useIcon(result.path);
+  const icon = useAppIcon(result.path);
   const ref = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
