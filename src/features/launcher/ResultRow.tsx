@@ -6,8 +6,8 @@ import type { LauncherKind, LauncherResult } from "../../lib/types/launcher";
 const KIND_LABEL: Record<LauncherKind, string> = {
   app: "Application",
   uwp: "Microsoft Store",
-  file: "Fichier",
-  folder: "Dossier",
+  file: "File",
+  folder: "Folder",
 };
 
 function FallbackIcon({ kind }: { kind: LauncherKind }) {
