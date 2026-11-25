@@ -38,4 +38,6 @@ pub struct AppVolume {
     pub name: String,
     pub volume: u8,
     pub muted: bool,
+    /// Fichier à passer à la commande d'icônes, quand l'application en a une.
+    pub icon_path: Option<String>,
 }

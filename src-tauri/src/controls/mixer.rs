@@ -14,6 +14,8 @@ pub struct Stream {
     pub name: String,
     pub volume: u8,
     pub muted: bool,
+    /// Fichier dont on tire l'icône : exécutable sous Windows, image du thème d'icônes sous Linux.
+    pub icon_path: Option<String>,
 }
 
 /// Regroupe les flux par application. Le volume affiché est le plus fort des flux, et l'application
@@ -25,8 +27,17 @@ pub fn group(streams: Vec<Stream>) -> Vec<AppVolume> {
             Some(app) => {
                 app.volume = app.volume.max(stream.volume);
                 app.muted &= stream.muted;
+                if app.icon_path.is_none() {
+                    app.icon_path = stream.icon_path;
+                }
             }
-            None => apps.push(AppVolume { id: stream.key, name: stream.name, volume: stream.volume, muted: stream.muted }),
+            None => apps.push(AppVolume {
+                id: stream.key,
+                name: stream.name,
+                volume: stream.volume,
+                muted: stream.muted,
+                icon_path: stream.icon_path,
+            }),
         }
     }
     apps.sort_by(|a, b| {
@@ -53,7 +64,7 @@ mod tests {
     use super::*;
 
     fn stream(key: &str, name: &str, volume: u8, muted: bool) -> Stream {
-        Stream { key: key.into(), name: name.into(), volume, muted }
+        Stream { key: key.into(), name: name.into(), volume, muted, icon_path: None }
     }
 
     #[test]
