@@ -4,11 +4,13 @@
 
 use std::fs;
 use std::io::ErrorKind;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use super::mixer::{self, Stream};
 use super::parse;
-use super::types::{AudioState, NetworkBluetoothState};
+use super::types::{AppVolume, AudioState, NetworkBluetoothState};
+use crate::icon_theme;
 
 const BACKLIGHT_DIR: &str = "/sys/class/backlight";
 
@@ -156,4 +158,78 @@ pub fn toggle_bluetooth(enable: bool) -> Result<(), String> {
     run("bluetoothctl", &["power", state_word(enable)])
         .or_else(|_| run("rfkill", &[if enable { "unblock" } else { "block" }, "bluetooth"]))
         .map(drop)
+}
+
+/// Flux audio des applications, avec leur numéro pactl.
+fn sink_inputs() -> Result<Vec<(u32, Stream)>, String> {
+    parse::sink_inputs(&run("pactl", &["--format=json", "list", "sink-inputs"])?)
+}
+
+pub fn get_app_volumes() -> Result<Vec<AppVolume>, String> {
+    // pactl donne un nom d'icône du thème (« firefox ») : il devient ici un fichier PNG.
+    let roots = icon_theme::icon_roots();
+    let pixmaps = Path::new(icon_theme::PIXMAPS_DIR);
+    let streams = sink_inputs()?
+        .into_iter()
+        .map(|(_, mut stream)| {
+            stream.icon_path = stream
+                .icon_path
+                .and_then(|name| icon_theme::find_png(&name, &roots, pixmaps))
+                .map(|path| path.to_string_lossy().into_owned());
+            stream
+        })
+        .collect();
+    Ok(mixer::group(streams))
+}
+
+fn matching(id: &str) -> Result<Vec<(u32, Stream)>, String> {
+    let found: Vec<(u32, Stream)> = sink_inputs()?.into_iter().filter(|(_, stream)| stream.key == id).collect();
+    if found.is_empty() {
+        Err("Cette application ne joue plus de son".to_string())
+    } else {
+        Ok(found)
+    }
+}
+
+pub fn set_app_volume(id: &str, level: u8) -> Result<(), String> {
+    let percent = format!("{}%", level.min(100));
+    for (index, _) in matching(id)? {
+        run("pactl", &["set-sink-input-volume", &index.to_string(), &percent])?;
+    }
+    Ok(())
+}
+
+/// Inverse le mute de tous les flux de l'application et retourne le nouvel état.
+pub fn toggle_app_mute(id: &str) -> Result<bool, String> {
+    let found = matching(id)?;
+    let next = !found.iter().all(|(_, stream)| stream.muted);
+    for (index, _) in found {
+        run("pactl", &["set-sink-input-mute", &index.to_string(), if next { "1" } else { "0" }])?;
+    }
+    Ok(next)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test manuel : demande un serveur audio (PulseAudio ou PipeWire) où au moins une application
+    /// joue. Lancé dans le conteneur par `packaging/linux/mixer-smoke-test.sh`.
+    #[test]
+    #[ignore = "dépend d'un serveur audio et d'une application qui joue"]
+    fn controls_real_app_streams() {
+        let apps = get_app_volumes().expect("liste des applications");
+        println!("avant : {apps:?}");
+        let app = apps.first().expect("au moins une application qui joue");
+
+        set_app_volume(&app.id, 42).expect("réglage du volume");
+        let volume = get_app_volumes().unwrap().into_iter().find(|a| a.id == app.id).unwrap().volume;
+        assert_eq!(volume, 42);
+
+        let muted = toggle_app_mute(&app.id).expect("mute");
+        let after = get_app_volumes().unwrap().into_iter().find(|a| a.id == app.id).unwrap();
+        println!("après : {after:?}");
+        assert_eq!(after.muted, muted);
+        assert!(muted, "l'application n'était pas muette, elle doit l'être après l'inversion");
+    }
 }

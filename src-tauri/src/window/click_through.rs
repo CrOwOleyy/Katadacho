@@ -30,9 +30,14 @@ pub struct ClickThroughState {
 }
 
 #[tauri::command]
-pub fn update_island_bounds(state: State<'_, ClickThroughState>, bounds: IslandBounds) {
+pub fn update_island_bounds(app: AppHandle, state: State<'_, ClickThroughState>, bounds: IslandBounds) {
     let mut guard = state.bounds.lock().unwrap_or_else(|e| e.into_inner());
     *guard = Some(bounds);
+    // En layer-shell, la zone cliquable suit directement la pilule, sans suivre le curseur.
+    #[cfg(target_os = "linux")]
+    super::layer_shell::set_input_region(&app, bounds);
+    #[cfg(not(target_os = "linux"))]
+    drop(app);
 }
 
 /// Lance le thread de suivi du curseur. Il bascule `ignore_cursor_events`

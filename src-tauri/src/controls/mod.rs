@@ -1,5 +1,6 @@
 #[cfg(not(windows))]
 mod linux;
+mod mixer;
 mod parse;
 #[cfg(windows)]
 pub mod audio;
@@ -11,11 +12,13 @@ pub mod brightness;
 pub mod policy_config;
 #[cfg(windows)]
 pub mod radios;
+#[cfg(windows)]
+mod sessions;
 pub mod types;
 #[cfg(windows)]
 pub mod wifi;
 
-pub use types::{AudioState, NetworkBluetoothState};
+pub use types::{AppVolume, AudioState, NetworkBluetoothState};
 
 async fn blocking<T, F>(task: F) -> Result<T, String>
 where
@@ -33,8 +36,8 @@ where
 mod imp {
     use windows::Devices::Radios::RadioKind;
 
-    use super::types::{AudioState, NetworkBluetoothState};
-    use super::{audio, bluetooth, brightness, policy_config, radios, wifi};
+    use super::types::{AppVolume, AudioState, NetworkBluetoothState};
+    use super::{audio, bluetooth, brightness, mixer, policy_config, radios, sessions, wifi};
     use crate::com::ComGuard;
 
     fn com() -> Result<ComGuard, String> {
@@ -95,6 +98,21 @@ mod imp {
         let _com = com()?;
         radios::set_enabled(RadioKind::Bluetooth, enable).map_err(|e| e.to_string())
     }
+
+    pub fn get_app_volumes() -> Result<Vec<AppVolume>, String> {
+        let _com = com()?;
+        sessions::streams().map(mixer::group).map_err(|e| e.to_string())
+    }
+
+    pub fn set_app_volume(id: &str, level: u8) -> Result<(), String> {
+        let _com = com()?;
+        sessions::set_volume(id, level)
+    }
+
+    pub fn toggle_app_mute(id: &str) -> Result<bool, String> {
+        let _com = com()?;
+        sessions::toggle_mute(id)
+    }
 }
 
 /// Linux : outils en ligne de commande standard (pactl, nmcli, bluetoothctl, logind).
@@ -146,4 +164,21 @@ pub async fn toggle_wifi(enable: bool) -> Result<(), String> {
 #[tauri::command]
 pub async fn toggle_bluetooth(enable: bool) -> Result<(), String> {
     blocking(move || imp::toggle_bluetooth(enable)).await
+}
+
+/// Applications qui jouent du son, avec leur volume propre.
+#[tauri::command]
+pub async fn get_app_volumes() -> Result<Vec<AppVolume>, String> {
+    blocking(imp::get_app_volumes).await
+}
+
+#[tauri::command]
+pub async fn set_app_volume(id: String, level: u8) -> Result<(), String> {
+    blocking(move || imp::set_app_volume(&id, level)).await
+}
+
+/// Coupe ou rétablit le son d'une application et retourne le nouvel état.
+#[tauri::command]
+pub async fn toggle_app_mute(id: String) -> Result<bool, String> {
+    blocking(move || imp::toggle_app_mute(&id)).await
 }

@@ -14,3 +14,12 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --pr
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /build
+
+# AppImage : linuxdeploy est lui-même un AppImage. Dans un conteneur, on le lance en mode extraction
+# (pas de FUSE nécessaire), et il lui faut squashfs-tools pour écrire l'image finale.
+RUN dnf install -y fuse fuse-libs squashfs-tools patchelf && dnf clean all
+ENV APPIMAGE_EXTRACT_AND_RUN=1
+
+# layer-shell place l'Island en haut de l'écran sous Wayland. Sway (backend sans écran) et grim
+# servent à la tester dans le conteneur, avec une vraie session Wayland et une capture d'écran.
+RUN dnf install -y gtk-layer-shell-devel sway grim dbus-daemon mesa-dri-drivers && dnf clean all

@@ -124,8 +124,15 @@ mod imp {
         spawn("xdg-open", &[&folder])
     }
 
-    pub fn icon(_path: &str, _cache_dir: &Path) -> Result<String, String> {
-        Err(unsupported("Les icônes d'applications"))
+    /// Les icônes Linux sont déjà des fichiers PNG du thème d'icônes : elles sont lues telles quelles.
+    pub fn icon(path: &str, _cache_dir: &Path) -> Result<String, String> {
+        use base64::engine::general_purpose::STANDARD;
+        use base64::Engine;
+
+        if !path.to_ascii_lowercase().ends_with(".png") {
+            return Err(unsupported("Les icônes qui ne sont pas en PNG"));
+        }
+        std::fs::read(path).map(|bytes| STANDARD.encode(bytes)).map_err(|e| e.to_string())
     }
 }
 

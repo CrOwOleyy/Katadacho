@@ -5,6 +5,7 @@
 
 use serde_json::Value;
 
+use super::mixer::{display_name, Stream};
 use super::types::{AudioDevice, AudioState};
 
 /// Plus grand pourcentage de volume parmi les canaux d'une sortie (`"45%"` donne 45).
@@ -45,6 +46,32 @@ pub fn audio_state(sinks_json: &str, default_sink: &str) -> Result<AudioState, S
         active_device: devices.iter().find(|device| device.is_default).cloned(),
         devices,
     })
+}
+
+/// Flux audio des applications depuis `pactl --format=json list sink-inputs`, avec leur numéro pactl.
+/// L'application est reconnue à son exécutable, sinon à son nom.
+pub fn sink_inputs(json: &str) -> Result<Vec<(u32, Stream)>, String> {
+    let inputs: Value = serde_json::from_str(json).map_err(|e| format!("Sortie de pactl illisible : {e}"))?;
+    let list = inputs.as_array().ok_or("Sortie de pactl inattendue")?;
+
+    Ok(list
+        .iter()
+        .filter_map(|input| {
+            let index = u32::try_from(input["index"].as_u64()?).ok()?;
+            let property = |key: &str| input["properties"][key].as_str().map(str::trim).filter(|text| !text.is_empty());
+            let binary = property("application.process.binary");
+            let app_name = property("application.name");
+            let key = binary.or(app_name).map(str::to_lowercase).unwrap_or_else(|| format!("stream-{index}"));
+            let name = app_name
+                .map(str::to_string)
+                .or_else(|| binary.map(display_name))
+                .unwrap_or_else(|| "Application".to_string());
+            let muted = input["mute"].as_bool().unwrap_or(false);
+            // Nom d'icône du thème (« firefox »), pas encore un fichier : il est résolu ensuite.
+            let icon_path = property("application.icon_name").or(binary).map(str::to_string);
+            Some((index, Stream { key, name, volume: sink_volume(input), muted, icon_path }))
+        })
+        .collect())
 }
 
 /// `Mute: yes` de `pactl get-sink-mute`.
@@ -150,6 +177,37 @@ mod tests {
     fn audio_state_fails_without_a_matching_default() {
         assert!(audio_state(SINKS, "absent").is_err());
         assert!(audio_state("pas du json", "x").is_err());
+    }
+
+    const SINK_INPUTS: &str = r#"[
+      {"index":41,"mute":false,"volume":{"front-left":{"value_percent":"80%"},"front-right":{"value_percent":"80%"}},
+       "properties":{"application.name":"Firefox","application.process.binary":"firefox"}},
+      {"index":42,"mute":true,"volume":{"mono":{"value_percent":"35%"}},
+       "properties":{"application.name":"Firefox","application.process.binary":"firefox"}},
+      {"index":57,"mute":false,"volume":{"front-left":{"value_percent":"64%"}},
+       "properties":{"application.name":"Spotify","application.process.binary":"spotify"}},
+      {"index":60,"mute":false,"volume":{"front-left":{"value_percent":"100%"}},
+       "properties":{"media.name":"bip"}}
+    ]"#;
+
+    #[test]
+    fn sink_inputs_are_keyed_by_executable() {
+        let inputs = sink_inputs(SINK_INPUTS).unwrap();
+        assert_eq!(inputs.len(), 4);
+        let (index, firefox) = &inputs[1];
+        assert_eq!((*index, firefox.key.as_str(), firefox.name.as_str()), (42, "firefox", "Firefox"));
+        assert_eq!((firefox.volume, firefox.muted), (35, true));
+        let (_, unnamed) = &inputs[3];
+        assert_eq!((unnamed.key.as_str(), unnamed.name.as_str()), ("stream-60", "Application"));
+    }
+
+    #[test]
+    fn sink_inputs_of_one_app_group_into_one_mixer_line() {
+        let streams = sink_inputs(SINK_INPUTS).unwrap().into_iter().map(|(_, stream)| stream).collect();
+        let apps = crate::controls::mixer::group(streams);
+        let firefox = apps.iter().find(|app| app.id == "firefox").unwrap();
+        assert_eq!((firefox.volume, firefox.muted), (80, false));
+        assert_eq!(apps.len(), 3);
     }
 
     #[test]

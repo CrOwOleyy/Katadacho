@@ -4,6 +4,7 @@ mod com;
 mod controls;
 mod db;
 mod fullscreen;
+mod icon_theme;
 mod idle;
 mod launcher;
 pub mod mcp;
@@ -20,7 +21,7 @@ mod timer;
 mod tray;
 mod window;
 
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 use window::click_through::{self, ClickThroughState};
 
@@ -28,7 +29,11 @@ use window::click_through::{self, ClickThroughState};
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_autostart::Builder::new().build())
-        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
+        // Relancer Katadacho alors qu'il tourne déjà ouvre l'Island de l'instance en cours, au lieu de
+        // ne rien faire de visible.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let _ = app.emit(tray::EVENT_ISLAND_OPEN, None::<&str>);
+        }))
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .manage(ClickThroughState::default())
@@ -45,11 +50,7 @@ pub fn run() {
             mcp::bridge::start(app.handle().clone(), data_dir.clone());
             app.manage(state::AppPaths { data_dir });
             tray::create(app)?;
-            window::position_island(app)?;
-            if let Some(island) = app.get_webview_window(window::ISLAND_LABEL) {
-                island.set_ignore_cursor_events(true)?;
-            }
-            click_through::start(app.handle().clone());
+            window::prepare_island(app)?;
             clipboard::start(app.handle().clone());
             launcher::start_indexing(app.handle().clone());
             let launcher_hotkey = app.state::<settings::SettingsState>().snapshot().hotkeys.launcher;
@@ -70,6 +71,9 @@ pub fn run() {
             controls::get_network_bt_state,
             controls::toggle_wifi,
             controls::toggle_bluetooth,
+            controls::get_app_volumes,
+            controls::set_app_volume,
+            controls::toggle_app_mute,
             telemetry::start_system_stats,
             telemetry::stop_system_stats,
             telemetry::kill_process,
