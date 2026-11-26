@@ -13,9 +13,9 @@ export function AiQuestionCard({ question, error, onAnswer }: AiQuestionCardProp
   const keepInside = (event: MouseEvent) => event.stopPropagation();
 
   return (
-    <div role="dialog" aria-label="Question de Claude" onClick={keepInside} className="flex h-full w-full flex-col justify-center gap-2.5 px-5">
+    <div role="dialog" aria-label="Question from Claude" onClick={keepInside} className="flex h-full w-full flex-col justify-center gap-2.5 px-5">
       <div className="min-w-0">
-        <p className="text-[10px] font-medium uppercase tracking-wider text-[color:var(--accent-color)]">Claude te demande</p>
+        <p className="text-[10px] font-medium uppercase tracking-wider text-[color:var(--accent-color)]">Claude asks</p>
         <p className="line-clamp-2 text-sm font-medium leading-snug">{question.question}</p>
       </div>
       <div className="flex flex-wrap gap-2">

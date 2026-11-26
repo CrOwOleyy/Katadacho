@@ -51,8 +51,8 @@ const TABS: { id: Tab; label: string; icon: ComponentType<{ size?: number }> }[]
   { id: "dashboard", label: "Dashboard", icon: Activity },
   { id: "clipboard", label: "Clipboard", icon: ClipboardList },
   { id: "launcher", label: "Launcher", icon: Search },
-  { id: "timer", label: "Minuteur", icon: TimerIcon },
-  { id: "settings", label: "Réglages", icon: SettingsIcon },
+  { id: "timer", label: "Timer", icon: TimerIcon },
+  { id: "settings", label: "Settings", icon: SettingsIcon },
 ];
 
 function useClock() {
@@ -299,7 +299,7 @@ export function IslandApp() {
                 </div>
                 <button
                   type="button"
-                  aria-label="Fermer le menu"
+                  aria-label="Close menu"
                   onClick={() => setExpanded(false)}
                   className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                 >

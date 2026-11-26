@@ -75,7 +75,7 @@ export function ControlsTab({ mood }: { mood: GhostMood }) {
   );
 
   if (!audio || !network) {
-    return <p className="text-sm text-white/50">Chargement des réglages système…</p>;
+    return <p className="text-sm text-white/50">Loading system controls…</p>;
   }
 
   return (

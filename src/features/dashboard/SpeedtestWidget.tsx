@@ -68,15 +68,15 @@ export function SpeedtestWidget() {
   const running = phase === "ping" || phase === "download" || phase === "upload";
 
   return (
-    <BentoCard title="Speedtest" icon={<Gauge size={14} />} className="col-span-4">
+    <BentoCard title="Speed test" icon={<Gauge size={14} />} className="col-span-4">
       <div className="flex flex-col items-center gap-3">
         <SpeedGauge
           mbps={live}
-          label={phase === "upload" ? "Envoi" : phase === "download" ? "Réception" : "Mbps"}
+          label={phase === "upload" ? "Upload" : phase === "download" ? "Download" : "Mbps"}
         />
         <div className="grid w-full grid-cols-2 gap-2 text-xs">
           <Stat label="Ping" value={result.pingMs} unit="ms" />
-          <Stat label="Gigue" value={result.jitterMs} unit="ms" />
+          <Stat label="Jitter" value={result.jitterMs} unit="ms" />
           <Stat label="Download" value={result.downloadMbps} unit="Mbps" />
           <Stat label="Upload" value={result.uploadMbps} unit="Mbps" />
         </div>
@@ -87,7 +87,7 @@ export function SpeedtestWidget() {
         onClick={() => void run()}
         className="self-start rounded-lg bg-[color:var(--accent-color)]/20 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[color:var(--accent-color)]/30 disabled:opacity-40"
       >
-        {running ? "Test en cours…" : "Lancer le speedtest"}
+        {running ? "Testing…" : "Run speed test"}
       </button>
       {error && <p className="truncate text-[10px] text-red-400">{error}</p>}
     </BentoCard>

@@ -1,8 +1,10 @@
 [package]
 name = "katadacho"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "A Dynamic Island for the desktop: system controls, live stats, clipboard history, launcher and timer"
+authors = ["Leyy"]
+license = "MIT"
+repository = "https://github.com/CrOwOleyy/Katadacho"
 edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

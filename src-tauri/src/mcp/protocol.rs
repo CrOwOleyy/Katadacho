@@ -23,16 +23,16 @@ fn tools() -> Value {
     json!([
         {
             "name": TOOL_NOTIFY,
-            "description": "Affiche une notification dans l'Island (la pilule en haut de l'écran de l'utilisateur). À utiliser quand une tâche longue se termine, ou qu'une information mérite d'être vue sans que l'utilisateur regarde cette fenêtre.",
+            "description": "Shows a notification in the island (the pill at the top of the user's screen). Use it when a long task finishes, or when something deserves to be seen without the user looking at this window.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "title": { "type": "string", "description": "Titre court, une ligne." },
-                    "summary": { "type": "string", "description": "Résumé en une ou deux phrases." },
+                    "title": { "type": "string", "description": "Short title, one line." },
+                    "summary": { "type": "string", "description": "Summary in one or two sentences." },
                     "status": {
                         "type": "string",
                         "enum": ["done", "waiting", "error", "info"],
-                        "description": "done : terminé, waiting : attend l'utilisateur, error : échec, info : simple information."
+                        "description": "done: finished, waiting: waiting for the user, error: failed, info: plain information."
                     }
                 },
                 "required": ["title", "summary"]
@@ -40,17 +40,17 @@ fn tools() -> Value {
         },
         {
             "name": TOOL_ASK,
-            "description": "Pose une question à l'utilisateur dans l'Island, avec des boutons de réponse, et attend son choix. À utiliser pour une décision rapide (oui ou non, choisir parmi quelques options) sans l'obliger à revenir dans cette fenêtre.",
+            "description": "Asks the user a question in the island, with answer buttons, and waits for their choice. Use it for a quick decision (yes or no, picking among a few options) without making them come back to this window.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "question": { "type": "string", "description": "La question, courte et claire." },
+                    "question": { "type": "string", "description": "The question, short and clear." },
                     "options": {
                         "type": "array",
                         "items": { "type": "string" },
                         "minItems": 2,
                         "maxItems": 4,
-                        "description": "Les réponses proposées, 2 à 4 boutons."
+                        "description": "The suggested answers, 2 to 4 buttons."
                     }
                 },
                 "required": ["question", "options"]
@@ -79,17 +79,17 @@ fn call_tool(name: &str, arguments: &Value, bridge: &dyn Bridge) -> Value {
     match name {
         TOOL_NOTIFY => {
             let (Some(title), Some(summary)) = (string_arg(arguments, "title"), string_arg(arguments, "summary")) else {
-                return tool_text("Les champs « title » et « summary » sont obligatoires.", true);
+                return tool_text("The title and summary fields are required.", true);
             };
             let status = string_arg(arguments, "status").unwrap_or("info");
             match bridge.notify(title, summary, status) {
-                Ok(()) => tool_text("Notification affichée dans l'Island.", false),
+                Ok(()) => tool_text("Notification shown in the island.", false),
                 Err(error) => tool_text(&format!("Impossible d'afficher la notification : {error}"), true),
             }
         }
         TOOL_ASK => {
             let Some(question) = string_arg(arguments, "question") else {
-                return tool_text("Le champ « question » est obligatoire.", true);
+                return tool_text("The question field is required.", true);
             };
             let options: Vec<String> = arguments
                 .get("options")
@@ -103,7 +103,7 @@ fn call_tool(name: &str, arguments: &Value, bridge: &dyn Bridge) -> Value {
             }
             match bridge.ask(question, &options) {
                 Ok(answer) => tool_text(&answer, false),
-                Err(error) => tool_text(&format!("Pas de réponse : {error}"), true),
+                Err(error) => tool_text(&format!("No answer: {error}"), true),
             }
         }
         other => tool_text(&format!("Outil inconnu : {other}"), true),

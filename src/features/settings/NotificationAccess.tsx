@@ -4,9 +4,9 @@ import type { NotificationAccess as Access } from "../../lib/types/notifications
 import { SettingRow } from "./SettingRow";
 
 const LABEL: Record<Access, string> = {
-  allowed: "Autorisé",
-  denied: "Refusé",
-  unspecified: "Non demandé",
+  allowed: "Allowed",
+  denied: "Denied",
+  unspecified: "Not requested",
 };
 
 /** État de l'autorisation Windows de lire les notifications, avec un bouton pour la demander. */
@@ -45,11 +45,11 @@ export function NotificationAccess() {
   return (
     <div className="flex flex-col gap-1">
       <SettingRow
-        label="Accès aux notifications"
+        label="Notification access"
         description={
           access === "denied"
-            ? "Autorise l'accès dans Paramètres Windows, Confidentialité et sécurité, Notifications."
-            : "Nécessaire pour lire les notifications des autres applications."
+            ? "Allow access in Windows Settings, Privacy & security, Notifications."
+            : "Needed to read notifications from other apps."
         }
       >
         <span
@@ -66,7 +66,7 @@ export function NotificationAccess() {
             onClick={() => void request()}
             className="rounded-lg bg-[color:var(--accent-color)]/25 px-3 py-1 text-xs font-medium hover:bg-[color:var(--accent-color)]/35 disabled:opacity-50"
           >
-            Autoriser
+            Allow
           </button>
         )}
       </SettingRow>

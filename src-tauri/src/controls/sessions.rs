@@ -84,7 +84,7 @@ fn describe(control: &IAudioSessionControl) -> WinResult<Option<Session>> {
     let muted = unsafe { volume.GetMute()? }.as_bool();
 
     let (key, name, icon_path) = if unsafe { control2.IsSystemSoundsSession() } == S_OK {
-        (SYSTEM_SOUNDS_KEY.to_string(), "Sons système".to_string(), system_sounds_icon())
+        (SYSTEM_SOUNDS_KEY.to_string(), "System sounds".to_string(), system_sounds_icon())
     } else {
         let pid = unsafe { control2.GetProcessId()? };
         match executable_path(pid) {

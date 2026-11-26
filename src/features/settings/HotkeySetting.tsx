@@ -8,10 +8,10 @@ import { useSettings } from "../../store/SettingsContext";
 import { SettingRow } from "./SettingRow";
 
 const OPTIONS: { value: LauncherHotkey; label: string }[] = [
-  { value: "copilot", label: "Touche Copilot" },
-  { value: "alt+space", label: "Alt + Espace" },
-  { value: "ctrl+alt+space", label: "Ctrl + Alt + Espace" },
-  { value: "ctrl+shift+space", label: "Ctrl + Maj + Espace" },
+  { value: "copilot", label: "Copilot key" },
+  { value: "alt+space", label: "Alt + Space" },
+  { value: "ctrl+alt+space", label: "Ctrl + Alt + Space" },
+  { value: "ctrl+shift+space", label: "Ctrl + Shift + Space" },
 ];
 
 /** Choix du raccourci du lanceur, avec l'état réellement appliqué par Windows. */
@@ -46,16 +46,16 @@ export function HotkeySetting() {
   return (
     <div className="flex flex-col gap-1">
       <SettingRow
-        label="Ouvrir le lanceur"
+        label="Open the launcher"
         description={
           settings.hotkeys.launcher === "copilot"
-            ? "Remplace l'ouverture de Copilot par le lanceur."
-            : "Raccourci global, depuis n'importe quelle application."
+            ? "Opens the launcher instead of Copilot."
+            : "Global shortcut, from any app."
         }
       >
         <div className="relative">
           <select
-            aria-label="Raccourci du lanceur"
+            aria-label="Launcher shortcut"
             value={settings.hotkeys.launcher}
             onChange={(event) =>
               update((s) => ({ ...s, hotkeys: { ...s.hotkeys, launcher: event.target.value as LauncherHotkey } }))
