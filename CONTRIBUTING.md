@@ -79,6 +79,27 @@ If you change the interface, update the README screenshots: run `pnpm dev`, open
 `src/screenshots/main.tsx`), and capture the island at 900 by 520 pixels. The page uses fictional data,
 so screenshots never show anything from your own machine.
 
+The same checks run automatically on every pull request, on Windows and on Linux (see
+`.github/workflows/ci.yml`).
+
+## Releasing
+
+1. Update `version` in `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and `package.json`, and merge
+   that change into `main`.
+2. Tag the merge commit with the same version and push the tag:
+
+   ```bash
+   git tag v0.2.0
+   ```
+
+   ```bash
+   git push origin v0.2.0
+   ```
+
+3. The release workflow builds the Windows installer and the Linux packages and attaches them to a draft
+   release. It stops early if the tag does not match the version in `tauri.conf.json`.
+4. On GitHub, open the draft under **Releases**, check the files, write the notes, and publish it.
+
 ## Pull requests
 
 - Describe what changes for the user and why.
