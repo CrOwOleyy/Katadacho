@@ -15,11 +15,11 @@ export function WifiCard({ state, onToggle }: WifiCardProps) {
     <BentoCard title="Wi-Fi" icon={<Wifi size={14} />} className="col-span-2">
       <div className="flex items-center justify-between">
         <span className="truncate text-sm font-medium">
-          {connected ? state.wifiSsid : state.wifiEnabled === false ? "Désactivé" : "Non connecté"}
+          {connected ? state.wifiSsid : state.wifiEnabled === false ? "Off" : "Not connected"}
         </span>
         <Toggle
           checked={state.wifiEnabled}
-          label="Activer le Wi-Fi"
+          label="Turn Wi-Fi on"
           onChange={onToggle}
         />
       </div>

@@ -4,15 +4,15 @@ import { useSettings } from "../../store/SettingsContext";
 
 /** Ce que la mascotte est en train de faire, en quelques mots. */
 const CAPTION: Record<GhostMood, string> = {
-  idle: "Au repos",
-  thinking: "Je réfléchis",
-  alert: "Nouvelle notification",
-  music: "En musique",
-  focus: "Concentré",
-  sleepy: "En pause",
-  happy: "Bien joué",
-  sad: "Oups",
-  watching: "En visionnage",
+  idle: "Resting",
+  thinking: "Thinking",
+  alert: "New notification",
+  music: "Listening",
+  focus: "Focused",
+  sleepy: "Taking a break",
+  happy: "Well done",
+  sad: "Oops",
+  watching: "Watching",
 };
 
 const GHOST_SIZE = 118;

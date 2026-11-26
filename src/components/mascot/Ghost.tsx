@@ -151,7 +151,7 @@ export function Ghost({ size = 64, mood = "idle", animated = true, speed = 1, lo
       className={className}
       overflow="visible"
       role="img"
-      aria-label="Mascotte fantôme"
+      aria-label="Ghost mascot"
     >
       <motion.g
         style={{ originX: 0.5, originY: 1 }}

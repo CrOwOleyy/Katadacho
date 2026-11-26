@@ -46,7 +46,7 @@ export function ClipboardTab() {
         if (active) unlisten = fn;
         else fn();
       })
-      .catch((reason: unknown) => setError(`Écoute du presse-papier impossible : ${String(reason)}`));
+      .catch((reason: unknown) => setError(`Cannot listen to the clipboard: ${String(reason)}`));
     return () => {
       active = false;
       unlisten?.();
@@ -80,7 +80,7 @@ export function ClipboardTab() {
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Rechercher dans l'historique"
+          placeholder="Search history"
           className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm outline-none placeholder:text-white/35 focus:border-[color:var(--accent-color)]"
         />
       </div>
@@ -104,7 +104,7 @@ export function ClipboardTab() {
         ))}
         {loaded && items.length === 0 && !error && (
           <p className="py-6 text-center text-sm text-white/45">
-            {query || filter !== "all" ? "Aucun résultat" : "Copie quelque chose avec Ctrl+C, il apparaîtra ici"}
+            {query || filter !== "all" ? "No results" : "Copy something with Ctrl+C and it will show up here"}
           </p>
         )}
       </div>

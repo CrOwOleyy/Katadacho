@@ -4,7 +4,7 @@ use std::path::Path;
 use tauri::State;
 
 use super::store::{self, ClipboardItem};
-use super::{attach_thumbnail, foreground, paste, thumbnail_path};
+use super::{attach_thumbnail, thumbnail_path};
 use crate::db::Database;
 
 const DEFAULT_LIMIT: u32 = 200;
@@ -55,20 +55,35 @@ pub async fn paste_clipboard_item(
 ) -> Result<(), String> {
     let item = store::get(&database, id)?.ok_or_else(|| format!("Élément {id} introuvable"))?;
 
-    tauri::async_runtime::spawn_blocking(move || {
-        match (&item.text_content, &item.image_path) {
-            (Some(text), _) => paste::put_text(text)?,
-            (None, Some(path)) => paste::put_image(Path::new(path))?,
-            (None, None) => return Err("Élément vide".to_string()),
-        }
+    tauri::async_runtime::spawn_blocking(move || put_back(&item, simulate_paste.unwrap_or(false)))
+        .await
+        .map_err(|e| e.to_string())?
+}
 
-        if simulate_paste.unwrap_or(false) {
-            let target = foreground::last_external_window()
-                .ok_or_else(|| "Aucune fenêtre précédente où coller".to_string())?;
-            paste::paste_into(target)?;
-        }
-        Ok(())
-    })
-    .await
-    .map_err(|e| e.to_string())?
+#[cfg(windows)]
+fn put_back(item: &ClipboardItem, simulate_paste: bool) -> Result<(), String> {
+    use super::{foreground, paste};
+
+    match (&item.text_content, &item.image_path) {
+        (Some(text), _) => paste::put_text(text)?,
+        (None, Some(path)) => paste::put_image(Path::new(path))?,
+        (None, None) => return Err("Élément vide".to_string()),
+    }
+
+    if simulate_paste {
+        let target = foreground::last_external_window()
+            .ok_or_else(|| "Aucune fenêtre précédente où coller".to_string())?;
+        paste::paste_into(target)?;
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn put_back(item: &ClipboardItem, simulate_paste: bool) -> Result<(), String> {
+    super::linux::put_back(item.text_content.as_deref(), item.image_path.as_deref().map(Path::new), simulate_paste)
+}
+
+#[cfg(not(any(windows, target_os = "linux")))]
+fn put_back(_item: &ClipboardItem, _simulate_paste: bool) -> Result<(), String> {
+    Err(crate::platform::unsupported("Le collage depuis l'historique"))
 }

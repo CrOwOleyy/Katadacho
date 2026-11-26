@@ -92,7 +92,7 @@ export function LauncherTab({ focusToken, onDone }: LauncherTabProps) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="Lancer une application ou chercher un fichier"
+          placeholder="Launch an app or find a file"
           className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm outline-none placeholder:text-white/35 focus:border-[color:var(--accent-color)]"
         />
       </div>
@@ -110,12 +110,12 @@ export function LauncherTab({ focusToken, onDone }: LauncherTabProps) {
           />
         ))}
         {query.trim() !== "" && results.length === 0 && (
-          <p className="py-4 text-center text-sm text-white/45">Aucun résultat</p>
+          <p className="py-4 text-center text-sm text-white/45">No results</p>
         )}
       </div>
 
       <p className="text-[10px] text-white/35">
-        ↑ ↓ naviguer · Entrée lancer · Ctrl+Entrée administrateur · Tab ouvrir l'emplacement
+        ↑ ↓ navigate · Enter launch · Ctrl+Enter as administrator · Tab open location
       </p>
     </div>
   );

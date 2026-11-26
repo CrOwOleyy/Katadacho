@@ -12,10 +12,10 @@ export function formatClock(totalSeconds: number): string {
 }
 
 export const PHASE_LABEL: Record<TimerPhase, string> = {
-  focus: "Concentration",
-  shortBreak: "Pause courte",
-  longBreak: "Pause longue",
-  countdown: "Minuteur",
+  focus: "Focus",
+  shortBreak: "Short break",
+  longBreak: "Long break",
+  countdown: "Timer",
 };
 
 const BREAK_COLOR = "#34d399";
