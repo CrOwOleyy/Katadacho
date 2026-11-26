@@ -151,14 +151,15 @@ support layer-shell: there the island is an ordinary window that the desktop may
 
 ## Installation
 
-Prebuilt installers are not published yet. Until then, build Katadacho from source as described below.
-The build produces:
+Download the latest version from the [Releases](https://github.com/CrOwOleyy/Katadacho/releases) page:
 
-- **Windows:** an NSIS installer that bundles WebView2, so it works on a fresh machine, and installs for the
-  current user without administrator rights.
-- **Linux:** an AppImage, a `.rpm` and a `.deb`.
+- **Windows:** `katadacho_<version>_x64-setup.exe`. It bundles WebView2, so it works on a fresh machine, and
+  installs for the current user without administrator rights.
+- **Linux:** the `.AppImage` runs on most distributions (`chmod +x`, then run it). Use the `.deb` on Debian and
+  Ubuntu, and the `.rpm` on Fedora.
 
-The binaries are not code-signed, so Windows SmartScreen may warn about an unknown publisher on first launch.
+The installers are not code-signed yet, so Windows SmartScreen may warn about an unknown publisher on first
+launch: choose **More info**, then **Run anyway**.
 
 ## Building from source
 
@@ -319,7 +320,7 @@ The README images come from `screenshots.html`: run `pnpm dev`, then open
 
 ## Known limitations
 
-- Prebuilt installers are not published yet, and the binaries are not code-signed.
+- The installers are not code-signed.
 - On GNOME (Wayland), the island cannot be pinned to the top of the screen.
 - Some features are Windows only for now: the live waveform, idle and fullscreen detection, the Copilot key,
   quick RAM cleaning and launching as administrator.
