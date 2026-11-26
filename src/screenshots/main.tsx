@@ -10,6 +10,7 @@ import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
 import "../styles/globals.css";
 import { IslandApp } from "../island/IslandApp";
+import type { MediaInfo, MediaPosition } from "../lib/types/media";
 import { FALLBACK, SettingsProvider } from "../store/SettingsContext";
 import * as fixtures from "./fixtures";
 
@@ -24,6 +25,27 @@ const settings = { ...FALLBACK, island: { ...FALLBACK.island, autoHideSeconds: 0
 const timer = scene === "timer" ? fixtures.focusTimer : fixtures.idleTimer;
 const timers: number[] = [];
 
+type NowPlaying = MediaInfo & Partial<Omit<MediaPosition, "playing">>;
+
+/**
+ * Optional real track for the media screenshots, in public/screenshot-media.json (ignored by git):
+ * { title, artist, coverBase64, coverMime, positionSeconds, durationSeconds }. Without it, the page
+ * uses the fictional track.
+ */
+let nowPlaying: NowPlaying | null = null;
+
+async function loadNowPlaying(): Promise<NowPlaying | null> {
+  try {
+    const response = await fetch("/screenshot-media.json", { cache: "no-store" });
+    if (!response.ok) return null;
+    const data = (await response.json()) as NowPlaying;
+    return data.title ? { ...data, playing: true } : null;
+  } catch {
+    // The dev server answers unknown paths with the HTML page: not JSON, so no real track.
+    return null;
+  }
+}
+
 function every(milliseconds: number, action: (tick: number) => void) {
   let tick = 0;
   action(tick);
@@ -37,9 +59,11 @@ mockIPC(
       case "get_settings":
         return settings;
       case "get_media_state":
-        return fixtures.media();
+        return nowPlaying ?? fixtures.media();
       case "media_position":
-        return fixtures.mediaPosition;
+        return nowPlaying?.positionSeconds !== undefined
+          ? { positionSeconds: nowPlaying.positionSeconds, durationSeconds: nowPlaying.durationSeconds ?? null, playing: true }
+          : fixtures.mediaPosition;
       case "start_audio_levels":
         every(60, (tick) => void emit("audio-level", 0.35 + 0.3 * Math.abs(Math.sin(tick * 0.7))));
         return null;
@@ -83,13 +107,6 @@ mockIPC(
   { shouldMockEvents: true },
 );
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <SettingsProvider>
-      <IslandApp />
-    </SettingsProvider>
-  </React.StrictMode>,
-);
 
 const wait = (milliseconds: number) => new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 
@@ -139,4 +156,16 @@ async function play() {
   document.body.dataset.ready = "true";
 }
 
-void play();
+async function start() {
+  nowPlaying = await loadNowPlaying();
+  ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+    <React.StrictMode>
+      <SettingsProvider>
+        <IslandApp />
+      </SettingsProvider>
+    </React.StrictMode>,
+  );
+  await play();
+}
+
+void start();
