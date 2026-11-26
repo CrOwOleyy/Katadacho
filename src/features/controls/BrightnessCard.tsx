@@ -9,13 +9,13 @@ interface BrightnessCardProps {
 
 export function BrightnessCard({ level, onCommit }: BrightnessCardProps) {
   return (
-    <BentoCard title="Luminosité" icon={<Sun size={14} />} className="col-span-2">
+    <BentoCard title="Brightness" icon={<Sun size={14} />} className="col-span-2">
       {level === null ? (
-        <span className="text-sm text-white/50">Luminosité non réglable sur cet écran</span>
+        <span className="text-sm text-white/50">Brightness cannot be adjusted on this screen</span>
       ) : (
         <div className="flex items-center gap-3">
           <Sun size={16} className="shrink-0 text-white/70" />
-          <Slider value={level} label="Luminosité" onCommit={onCommit} />
+          <Slider value={level} label="Brightness" onCommit={onCommit} />
           <span className="w-9 text-right font-mono text-xs text-white/60">{level}</span>
         </div>
       )}

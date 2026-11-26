@@ -13,11 +13,11 @@ fn open_island(app: &AppHandle, tab: Option<&str>) {
 }
 
 pub fn create(app: &App) -> tauri::Result<()> {
-    let open = MenuItem::with_id(app, "open", "Ouvrir l'Island", true, None::<&str>)?;
-    let settings = MenuItem::with_id(app, "settings", "Réglages", true, None::<&str>)?;
+    let open = MenuItem::with_id(app, "open", "Open the island", true, None::<&str>)?;
+    let settings = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
-    let restart = MenuItem::with_id(app, "restart", "Redémarrer", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Quitter Katadacho", true, None::<&str>)?;
+    let restart = MenuItem::with_id(app, "restart", "Restart", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "Quit Katadacho", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&open, &settings, &separator, &restart, &quit])?;
 
     let mut builder = TrayIconBuilder::with_id("katadacho")

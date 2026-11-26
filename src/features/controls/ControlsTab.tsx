@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import type { GhostMood } from "../../components/mascot/mood";
 import { ipc } from "../../lib/ipc";
-import type { AudioState, NetworkBluetoothState } from "../../lib/types/controls";
+import type { AppVolume, AudioState, NetworkBluetoothState } from "../../lib/types/controls";
 import { BluetoothCard } from "./BluetoothCard";
 import { BrightnessCard } from "./BrightnessCard";
 import { MascotCard } from "./MascotCard";
 import { MediaCard } from "./MediaCard";
+import { MixerCard } from "./MixerCard";
 import { VolumeCard } from "./VolumeCard";
 import { WifiCard } from "./WifiCard";
 
@@ -16,19 +17,22 @@ const cache: {
   audio: AudioState | null;
   network: NetworkBluetoothState | null;
   brightness: number | null;
-} = { audio: null, network: null, brightness: null };
+  apps: AppVolume[] | null;
+} = { audio: null, network: null, brightness: null, apps: null };
 
 export function ControlsTab({ mood }: { mood: GhostMood }) {
   const [audio, setAudio] = useState<AudioState | null>(cache.audio);
   const [network, setNetwork] = useState<NetworkBluetoothState | null>(cache.network);
   const [brightness, setBrightness] = useState<number | null>(cache.brightness);
+  const [apps, setApps] = useState<AppVolume[] | null>(cache.apps);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    const [audioResult, networkResult, brightnessResult] = await Promise.allSettled([
+    const [audioResult, networkResult, brightnessResult, appsResult] = await Promise.allSettled([
       ipc.getAudioState(),
       ipc.getNetworkBtState(),
       ipc.getBrightness(),
+      ipc.getAppVolumes(),
     ]);
 
     if (audioResult.status === "fulfilled") {
@@ -42,6 +46,9 @@ export function ControlsTab({ mood }: { mood: GhostMood }) {
     // Pas d'écran réglable : la carte luminosité l'affiche, ce n'est pas une erreur globale.
     cache.brightness = brightnessResult.status === "fulfilled" ? brightnessResult.value : null;
     setBrightness(cache.brightness);
+    // Mixeur indisponible : la carte est simplement masquée, la carte Volume signale déjà le problème.
+    cache.apps = appsResult.status === "fulfilled" ? appsResult.value : null;
+    setApps(cache.apps);
 
     const failures = [audioResult, networkResult]
       .filter((result): result is PromiseRejectedResult => result.status === "rejected")
@@ -68,7 +75,7 @@ export function ControlsTab({ mood }: { mood: GhostMood }) {
   );
 
   if (!audio || !network) {
-    return <p className="text-sm text-white/50">Chargement des réglages système…</p>;
+    return <p className="text-sm text-white/50">Loading system controls…</p>;
   }
 
   return (
@@ -94,6 +101,13 @@ export function ControlsTab({ mood }: { mood: GhostMood }) {
           onToggleMute={() => void run(() => ipc.toggleMute())}
           onSelectDevice={(id) => void run(() => ipc.setDefaultAudioDevice(id))}
         />
+        {apps && (
+          <MixerCard
+            apps={apps}
+            onVolume={(id, level) => void run(() => ipc.setAppVolume(id, level))}
+            onToggleMute={(id) => void run(() => ipc.toggleAppMute(id))}
+          />
+        )}
       </div>
       {error && <p className="truncate text-xs text-red-400">{error}</p>}
     </div>

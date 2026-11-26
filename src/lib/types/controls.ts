@@ -25,3 +25,14 @@ export interface IslandBounds {
   width: number;
   height: number;
 }
+
+/** Volume d'une application dans le mixeur. */
+export interface AppVolume {
+  /** Identifiant stable, renvoyé tel quel pour régler l'application. */
+  id: string;
+  name: string;
+  volume: number;
+  muted: boolean;
+  /** Fichier dont le système tire l'icône de l'application, quand elle en a une. */
+  iconPath: string | null;
+}

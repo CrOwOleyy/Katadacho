@@ -1,4 +1,4 @@
-use serde::Serialize;
+use super::types::{AudioDevice, AudioState};
 use windows::core::{Result as WinResult, PWSTR};
 use windows::Win32::Devices::FunctionDiscovery::PKEY_Device_FriendlyName;
 use windows::Win32::Media::Audio::Endpoints::IAudioEndpointVolume;
@@ -6,61 +6,18 @@ use windows::Win32::Media::Audio::{
     eConsole, eRender, IMMDevice, IMMDeviceEnumerator, MMDeviceEnumerator, DEVICE_STATE_ACTIVE,
 };
 use windows::Win32::System::Com::{
-    CoCreateInstance, CoInitializeEx, CoTaskMemFree, CoUninitialize, CLSCTX_ALL, COINIT_MULTITHREADED,
+    CoCreateInstance, CoTaskMemFree, CLSCTX_ALL,
     STGM_READ,
 };
 use windows::Win32::System::Com::StructuredStorage::PropVariantToStringAlloc;
 use windows::Win32::UI::Shell::PropertiesSystem::IPropertyStore;
-
-/// Initialise COM pour le thread courant et le libère au drop, si l'init a réussi.
-pub struct ComGuard {
-    should_uninit: bool,
-}
-
-impl ComGuard {
-    pub fn new() -> WinResult<Self> {
-        let hr = unsafe { CoInitializeEx(None, COINIT_MULTITHREADED) };
-        if hr.is_ok() {
-            Ok(Self { should_uninit: true })
-        } else if hr == windows::Win32::Foundation::RPC_E_CHANGED_MODE {
-            Ok(Self { should_uninit: false })
-        } else {
-            Err(windows::core::Error::from(hr))
-        }
-    }
-}
-
-impl Drop for ComGuard {
-    fn drop(&mut self) {
-        if self.should_uninit {
-            unsafe { CoUninitialize() };
-        }
-    }
-}
-
-#[derive(Serialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct AudioDevice {
-    pub id: String,
-    pub name: String,
-    pub is_default: bool,
-}
-
-#[derive(Serialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct AudioState {
-    pub volume: u8,
-    pub muted: bool,
-    pub active_device: Option<AudioDevice>,
-    pub devices: Vec<AudioDevice>,
-}
 
 fn enumerator() -> WinResult<IMMDeviceEnumerator> {
     unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) }
 }
 
 /// Convertit un PWSTR alloué par COM en String puis libère la mémoire.
-fn take_pwstr(id: PWSTR) -> WinResult<String> {
+pub(super) fn take_pwstr(id: PWSTR) -> WinResult<String> {
     let text = unsafe { id.to_string() }.map_err(|_| windows::core::Error::from(windows::Win32::Foundation::E_FAIL))?;
     unsafe { CoTaskMemFree(Some(id.0 as *const std::ffi::c_void)) };
     Ok(text)

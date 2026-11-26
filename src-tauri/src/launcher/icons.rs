@@ -5,6 +5,7 @@ use std::ffi::c_void;
 use std::fs;
 use std::mem::size_of;
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
@@ -33,14 +34,31 @@ fn cache_file(cache_dir: &Path, path: &str) -> std::path::PathBuf {
 pub fn icon_base64(path: &str, cache_dir: &Path) -> Result<String, String> {
     let file = cache_file(cache_dir, path);
     if let Ok(bytes) = fs::read(&file) {
-        return Ok(STANDARD.encode(bytes));
+        if !bytes.is_empty() {
+            return Ok(STANDARD.encode(bytes));
+        }
     }
 
-    let image = extract(path)?;
-    fs::create_dir_all(cache_dir).map_err(|e| e.to_string())?;
-    image.save(&file).map_err(|e| e.to_string())?;
+    let mut png = Vec::new();
+    extract(path)?
+        .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
+        .map_err(|e| e.to_string())?;
+    // Le cache n'est qu'un raccourci : s'il ne peut pas être écrit, l'icône est quand même renvoyée.
+    let _ = write_cache(cache_dir, &file, &png);
+    Ok(STANDARD.encode(png))
+}
 
-    fs::read(&file).map(|bytes| STANDARD.encode(bytes)).map_err(|e| e.to_string())
+/// Écrit le cache sous un nom temporaire propre à l'appel, puis le renomme : deux demandes
+/// simultanées pour la même icône ne se gênent pas, et un lecteur ne voit jamais un fichier à moitié écrit.
+fn write_cache(cache_dir: &Path, file: &Path, png: &[u8]) -> std::io::Result<()> {
+    static WRITE_COUNTER: AtomicU64 = AtomicU64::new(0);
+    fs::create_dir_all(cache_dir)?;
+    let attempt = WRITE_COUNTER.fetch_add(1, Ordering::Relaxed);
+    let temporary = file.with_extension(format!("{}-{attempt}.tmp", std::process::id()));
+    fs::write(&temporary, png)?;
+    fs::rename(&temporary, file).inspect_err(|_| {
+        let _ = fs::remove_file(&temporary);
+    })
 }
 
 fn extract(path: &str) -> Result<RgbaImage, String> {
@@ -118,4 +136,85 @@ fn bitmap_to_image(bitmap: HBITMAP) -> Result<RgbaImage, String> {
     }
 
     RgbaImage::from_raw(width as u32, height as u32, pixels).ok_or_else(|| "Image d'icône invalide".to_string())
+}
+
+#[cfg(test)]
+mod concurrency_tests {
+    use super::*;
+    use crate::com::ComGuard;
+
+    /// Test manuel : extrait plusieurs icônes en même temps, comme le mixeur au premier affichage.
+    /// `cargo test --lib icons_extract_in_parallel -- --ignored --nocapture`
+    #[test]
+    #[ignore = "dépend des applications installées"]
+    fn icons_extract_in_parallel() {
+        let paths: [&'static str; 4] = [
+            r"C:\Program Files\Mozilla Firefox\firefox.exe",
+            r"C:\Program Files (x86)\Steam\steam.exe",
+            r"C:\Program Files (x86)\Steam\bin\cef\cef.win64\steamwebhelper.exe",
+            r"C:\Windows\System32\SndVol.exe",
+        ];
+        let mut failures = Vec::new();
+        for round in 0..10 {
+            let cache = std::env::temp_dir().join(format!("katadacho-icon-race-{round}"));
+            let _ = fs::remove_dir_all(&cache);
+            let handles: Vec<_> = paths
+                .iter()
+                .map(|&path| {
+                    let cache = cache.clone();
+                    std::thread::spawn(move || {
+                        let _com = ComGuard::new().expect("COM");
+                        icon_base64(path, &cache).map(|_| ()).map_err(|error| format!("{path}: {error}"))
+                    })
+                })
+                .collect();
+            for handle in handles {
+                if let Err(error) = handle.join().unwrap() {
+                    failures.push(format!("tour {round} : {error}"));
+                }
+            }
+            let _ = fs::remove_dir_all(&cache);
+        }
+        for failure in &failures {
+            println!("{failure}");
+        }
+        assert!(failures.is_empty(), "{} échecs sur 40 extractions", failures.len());
+    }
+}
+
+#[cfg(test)]
+mod duplicate_request_tests {
+    use super::*;
+    use crate::com::ComGuard;
+
+    /// Test manuel : deux demandes simultanées pour la même icône, cache vide, comme React en mode dev.
+    #[test]
+    #[ignore = "dépend des applications installées"]
+    fn the_same_icon_requested_twice_at_once() {
+        let path: &'static str = r"C:\Program Files\Mozilla Firefox\firefox.exe";
+        let mut empty = 0;
+        for round in 0..20 {
+            let cache = std::env::temp_dir().join(format!("katadacho-icon-twice-{round}"));
+            let _ = fs::remove_dir_all(&cache);
+            let handles: Vec<_> = (0..2)
+                .map(|_| {
+                    let cache = cache.clone();
+                    std::thread::spawn(move || {
+                        let _com = ComGuard::new().expect("COM");
+                        icon_base64(path, &cache)
+                    })
+                })
+                .collect();
+            for handle in handles {
+                match handle.join().unwrap() {
+                    Ok(icon) if icon.len() < 100 => empty += 1,
+                    Ok(_) => {}
+                    Err(error) => println!("tour {round} : erreur {error}"),
+                }
+            }
+            let _ = fs::remove_dir_all(&cache);
+        }
+        println!("réponses vides ou tronquées : {empty} sur 40");
+        assert_eq!(empty, 0);
+    }
 }

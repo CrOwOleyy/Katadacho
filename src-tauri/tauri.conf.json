@@ -10,6 +10,7 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "label": "island",
@@ -34,7 +35,7 @@
     "active": true,
     "targets": "all",
     "publisher": "Katadacho",
-    "copyright": "Copyright (c) 2026 Katadacho",
+    "copyright": "Copyright (c) 2026 Leyy",
     "category": "Utility",
     "shortDescription": "Une Dynamic Island pour le bureau : contrôles, média, presse-papier et lanceur.",
     "longDescription": "Katadacho affiche une île flottante en haut de l'écran : volume, luminosité, Wi-Fi et Bluetooth, média en cours, presse-papier, lanceur d'applications, minuteur Pomodoro et notifications.",
@@ -53,6 +54,14 @@
         "installMode": "currentUser",
         "languages": ["French", "English"],
         "displayLanguageSelector": true
+      }
+    },
+    "linux": {
+      "deb": {
+        "depends": ["pulseaudio-utils | pipewire-pulse", "network-manager", "bluez", "pkexec | policykit-1", "libgtk-layer-shell0"]
+      },
+      "rpm": {
+        "depends": ["pulseaudio-utils", "NetworkManager", "bluez", "polkit", "gtk-layer-shell"]
       }
     }
   }

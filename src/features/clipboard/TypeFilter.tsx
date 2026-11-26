@@ -1,11 +1,11 @@
 import type { ClipboardFilter } from "../../lib/types/clipboard";
 
 const FILTERS: { id: ClipboardFilter; label: string }[] = [
-  { id: "all", label: "Tout" },
-  { id: "text", label: "Texte" },
+  { id: "all", label: "All" },
+  { id: "text", label: "Text" },
   { id: "image", label: "Images" },
-  { id: "link", label: "Liens" },
-  { id: "pinned", label: "Épinglés" },
+  { id: "link", label: "Links" },
+  { id: "pinned", label: "Pinned" },
 ];
 
 interface TypeFilterProps {

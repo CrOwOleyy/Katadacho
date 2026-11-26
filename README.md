@@ -1,209 +1,337 @@
-# Katadacho
+<p align="center">
+  <img src="assets/logo.svg" alt="Katadacho logo" width="120" />
+</p>
 
-Une « Dynamic Island » pour Windows 11, collée en haut de l'écran, qui regroupe les réglages système, la télémétrie du PC, un presse-papier persistant, un lanceur d'applications, un minuteur et les notifications Windows. Application de bureau en Tauri v2 (Rust) avec une interface React.
+<h1 align="center">Katadacho</h1>
 
-> Statut : version 0.1.0, en développement actif. Seul Windows 11 est géré pour l'instant.
+<p align="center">
+  A Dynamic Island for your desktop: system controls, live stats, clipboard history, an app launcher,<br />
+  a Pomodoro timer and notifications, in one pill at the top of the screen.
+</p>
 
-## Fonctionnalités
+<p align="center">
+  <img alt="Windows 11" src="https://img.shields.io/badge/Windows-11-0078D4?logo=windows11&logoColor=white" />
+  <img alt="Linux" src="https://img.shields.io/badge/Linux-X11%20%7C%20Wayland-FCC624?logo=linux&logoColor=black" />
+  <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" />
+  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-green" />
+</p>
 
-### Déjà disponibles
+<p align="center">
+  <img src="docs/images/pill.png" alt="The collapsed island showing the mascot, album art, a live waveform and the time" width="420" />
+</p>
 
-| Domaine | Ce que ça fait |
+<p align="center">
+  <img src="docs/images/controls.png" alt="The Controls tab: media player, Wi-Fi, Bluetooth, brightness and volume" width="760" />
+</p>
+
+> **Status:** version 0.1.0, in active development. Windows 11 is the main platform; Linux works and is
+> tested on Fedora. macOS is not supported yet.
+
+## Contents
+
+- [Features](#features)
+- [The mascot](#the-mascot)
+- [Claude Desktop integration](#claude-desktop-integration)
+- [Platform support](#platform-support)
+- [Installation](#installation)
+- [Building from source](#building-from-source)
+- [Usage](#usage)
+- [Privacy](#privacy)
+- [Architecture](#architecture)
+- [Testing](#testing)
+- [Known limitations](#known-limitations)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Features
+
+The island lives at the top of the screen as a small pill. Hover it (or click it) and it opens into a menu
+with six tabs. Transparent areas let clicks through to the windows below, so it never gets in the way.
+
+### Controls
+
+Volume and output device, brightness (laptop panels and external monitors over DDC/CI), Wi-Fi and
+Bluetooth, and media playback with album art, seek bar and play, pause, next and previous.
+
+The **mixer** sets the volume of each app on its own, with the app's real name and icon. Apps that open
+several audio streams (a browser, a voice chat) get a single slider.
+
+<p align="center">
+  <img src="docs/images/mixer.png" alt="The mixer: one volume slider per app, with its icon" width="760" />
+</p>
+
+### Dashboard
+
+CPU, RAM, GPU and disk in real time with history, network and disk throughput, the top processes grouped
+by app (with a button to end them), a built-in speed test, and a RAM cleaner.
+
+<p align="center">
+  <img src="docs/images/dashboard.png" alt="The Dashboard tab: usage rings, memory cleaner, network, top processes and speed test" width="760" />
+</p>
+
+### Clipboard
+
+An unlimited history of everything you copy (text, links, colors, code, images) with instant search,
+filters, pinning, and one-click paste back into the previous window. Copies made from a password manager
+are never saved, and secrets copied by hand (API keys, tokens) are hidden and erased after a few minutes.
+
+<p align="center">
+  <img src="docs/images/clipboard.png" alt="The Clipboard tab: search, filters and the history with a hidden secret" width="760" />
+</p>
+
+### Launcher
+
+A fast launcher for your apps, files and folders, with fuzzy search, opened from anywhere with a global
+shortcut (Alt + Space by default, or the Copilot key on Windows).
+
+<p align="center">
+  <img src="docs/images/launcher.png" alt="The Launcher tab with fuzzy search results" width="760" />
+</p>
+
+### Timer
+
+Pomodoro (focus, short break, long break) and a plain countdown. While it runs, a chip with the time left
+stays in the pill, and a sound plays at the end of each phase.
+
+<p align="center">
+  <img src="docs/images/timer.png" alt="The Timer tab during a focus session" width="760" />
+</p>
+
+### Notifications and settings
+
+Notifications from other apps appear as a banner in the pill, with a queue, an adjustable display time and
+a list of apps to ignore. Everything is configurable: animation speed and delays, auto-hide, Pomodoro
+durations, the mascot's behavior, launch at sign-in and the launcher shortcut.
+
+<p align="center">
+  <img src="docs/images/settings.png" alt="The Settings tab" width="760" />
+</p>
+
+## The mascot
+
+A small ghost sits in the pill and reacts to what you are doing: it listens to music with you, focuses
+during a Pomodoro, falls asleep when you are away or late at night, cheers after a successful task and
+looks sad when something fails.
+
+<p align="center">
+  <img src="docs/images/mascot-moods.png" alt="The eight moods of the ghost mascot" width="760" />
+</p>
+
+## Claude Desktop integration
+
+Katadacho can act as a local [MCP](https://modelcontextprotocol.io) server for Claude Desktop, with no API
+key. In **Settings**, under **Claude Desktop**, click **Connect**, then restart Claude Desktop. Claude gets
+two tools:
+
+| Tool | What it does |
 |---|---|
-| **Island** | Pilule transparente de 180 px en haut de l'écran. Elle s'ouvre après un court survol (ou au clic), affiche l'heure, la pochette et une onde sonore du média en cours, et se cache d'elle-même. Les zones transparentes laissent passer les clics. |
-| **Controls** | Volume et changement de périphérique de sortie en un clic, luminosité (écrans de portable et écrans externes DDC/CI), Wi-Fi et Bluetooth (activation, réseau connecté, appareils connectés), et contrôles média (lecture, pause, suivant, précédent, déplacement dans le morceau). |
-| **Dashboard** | CPU, RAM, GPU, disque et réseau en temps réel avec historique, Top 5 des processus regroupés par application avec bouton pour les terminer, et speedtest intégré (latence, gigue, débit descendant et montant). |
-| **Clipboard** | Historique infini de tous les `Ctrl+C` (texte, liens, couleurs Hex, code, images), recherche instantanée, filtres, épinglage, suppression et collage direct dans la fenêtre précédente. |
-| **Launcher** | Lanceur façon Everything : applications du menu Démarrer, applications du Microsoft Store, fichiers et dossiers de ton profil, recherche floue en mémoire, lancement en administrateur et ouverture de l'emplacement. |
-| **Minuteur** | Pomodoro (concentration, pause courte, pause longue) et minuteur simple. Une puce avec le temps restant s'affiche dans la pilule, avec un son à la fin de chaque phase. |
-| **Notifications** | Les notifications Windows s'affichent en bannière dans la pilule, avec file d'attente, durée réglable et liste d'applications ignorées. |
-| **Réglages** | Vitesse et délais des animations, disparition automatique, durées du Pomodoro, options des notifications. Tout est enregistré. |
+| `notify_island` | Shows a notification in the island, for example when a long task finishes. |
+| `ask_user_in_island` | Asks you a question with 2 to 4 answer buttons and waits for your choice. |
 
-### Prévu, pas encore fait
+The bridge only listens on `127.0.0.1`, with a random port and a secret token.
 
-- Gestionnaire de fonds d'écran façon Niri, avec palette de couleurs qui colore l'Island.
-- Les 4 Slots personnalisables.
-- Pont IA sans clé API (serveur MCP pour Claude Desktop, UI Automation, WebSocket local, extension navigateur).
-- « Circle to Ask » : entourer une zone de l'écran pour la soumettre à une IA.
-- Routines et actions planifiées.
-- Pont vers le service Everything de voidtools, pour étendre la recherche à tout le disque.
+## Platform support
 
-## Prérequis
-
-| Outil | Version | Remarque |
+| Feature | Windows 11 | Linux |
 |---|---|---|
-| Windows | 11 | Testé sur Windows 11. Windows 10 non testé. |
-| Visual Studio Build Tools | 2022 | Charge de travail « Développement Desktop en C++ » (MSVC et SDK Windows). |
-| Rust | 1.85 ou plus | Le projet utilise l'édition 2024. Développé avec 1.99. |
-| Node.js | 20.19 ou plus (ou 22.12 ou plus) | Exigé par Vite 8. Développé avec 24. |
-| pnpm | Récent | Développé avec 12. Aucune version minimale n'est imposée par le projet. |
-| WebView2 | Dernière | Déjà présent sur Windows 11. |
+| Island, tabs, tray icon, launch at sign-in | Yes | Yes (see the Wayland note below) |
+| Volume, output device, mixer | Core Audio | `pactl` (PipeWire or PulseAudio) |
+| Brightness | WMI and DDC/CI | Backlight through logind, or `brightnessctl` |
+| Wi-Fi and Bluetooth | Native APIs | `nmcli` and `bluetoothctl` |
+| Now playing and media keys | System media controls | MPRIS |
+| Clipboard history | Yes | Yes (X11 and Wayland) |
+| Notifications in the pill | Yes, after granting access | Yes, read from D-Bus |
+| RAM cleaner | Quick and deep | Deep only, asks for your password |
+| Live waveform, idle and fullscreen detection, Copilot key | Yes | Not yet |
 
-### Smart App Control
+**Wayland:** the island uses the layer-shell protocol, so it stays pinned at the top of the screen on
+compositors that support it, such as KDE Plasma, niri, Hyprland and Sway (tested on Sway). GNOME does not
+support layer-shell: there the island is an ordinary window that the desktop may place elsewhere. Set
+`KATADACHO_NO_LAYER_SHELL=1` to turn layer-shell off.
 
-Smart App Control bloque les exécutables non signés, dont celui que Cargo compile. Dans ce cas `pnpm tauri dev` échoue avec :
+## Installation
 
-```text
-Une stratégie de contrôle d'application a bloqué ce fichier. (os error 4551)
+Prebuilt installers are not published yet. Until then, build Katadacho from source as described below.
+The build produces:
+
+- **Windows:** an NSIS installer that bundles WebView2, so it works on a fresh machine, and installs for the
+  current user without administrator rights.
+- **Linux:** an AppImage, a `.rpm` and a `.deb`.
+
+The binaries are not code-signed, so Windows SmartScreen may warn about an unknown publisher on first launch.
+
+## Building from source
+
+### Requirements
+
+| Tool | Version |
+|---|---|
+| Rust | 1.85 or later (the project uses the 2024 edition) |
+| Node.js | 20.19 or later, or 22.12 or later (required by Vite) |
+| pnpm | Recent |
+
+**Windows:** Visual Studio Build Tools 2022 with the "Desktop development with C++" workload. WebView2 is
+already part of Windows 11.
+
+> Smart App Control blocks unsigned executables, including the one Cargo builds, and `pnpm tauri dev` then
+> fails with `os error 4551`. To develop, turn it off in Windows Security, under App & browser control. This
+> cannot be undone without reinstalling Windows.
+
+**Linux:** WebKitGTK 4.1, GTK layer-shell and the usual build tools.
+
+```bash
+# Fedora (tested)
+sudo dnf install webkit2gtk4.1-devel openssl-devel libappindicator-gtk3-devel librsvg2-devel libxdo-devel gtk-layer-shell-devel gcc gcc-c++ make
 ```
 
-Pour développer, désactive-le dans **Sécurité Windows**, **Contrôle des applications et du navigateur**, **Paramètres de Contrôle intelligent des applications**. Attention : c'est irréversible sans réinstaller Windows. Les autres protections (Defender, SmartScreen) restent actives.
+```bash
+# Debian and Ubuntu
+sudo apt install libwebkit2gtk-4.1-dev build-essential libssl-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libgtk-layer-shell-dev
+```
 
-## Installation et lancement
+```bash
+# Arch
+sudo pacman -S --needed webkit2gtk-4.1 base-devel openssl libappindicator-gtk3 librsvg xdotool gtk-layer-shell
+```
+
+Only the Fedora list is tested; the other two follow the Tauri prerequisites.
+
+At runtime, the Linux features call standard tools: `pactl`, `nmcli`, `bluetoothctl` and `pkexec` (polkit).
+Optional: `xdotool` (X11) or `wtype` (Wayland) to paste automatically from the clipboard history, and
+`wl-paste` or `xclip` to recognize password manager copies. A missing tool shows a clear message instead of
+breaking the app.
+
+### Run and build
 
 ```bash
 pnpm install
 ```
 
-Lancer l'application en développement (la première compilation Rust prend plusieurs minutes) :
-
 ```bash
 pnpm tauri dev
 ```
 
-Vérifier le frontend seul (typage TypeScript strict puis build Vite) :
+The first Rust build takes several minutes. To build the installers:
 
 ```bash
-pnpm build
+pnpm tauri build
 ```
 
-Lancer les tests Rust :
+Linux packages can also be built in a Fedora container, from any host with Docker:
+
+```bash
+docker build -t katadacho-fedora -f packaging/linux/fedora.Dockerfile packaging/linux
+```
+
+```bash
+docker run --rm -v "$PWD:/repo:ro" -v "$PWD/out:/out" katadacho-fedora bash /repo/packaging/linux/build-in-container.sh bundle appimage
+```
+
+## Usage
+
+- **Open the menu:** hover the pill for a moment, or click it. The delay is set in Settings.
+- **Close the menu:** move the pointer away, press `Esc`, or click the cross.
+- **Launcher:** press the shortcut from any app, then `↑` `↓` to move, `Enter` to launch,
+  `Ctrl + Enter` to launch as administrator and `Tab` to open the file location.
+- **Hidden island:** when the island hides, a thin bar stays at the top of the screen; hover it to bring
+  the island back.
+- **Tray icon:** left click opens the island; right click shows Settings, Restart and Quit.
+- **Notifications on Windows:** grant access once in Settings, under Notifications.
+
+## Privacy
+
+Everything stays on your machine, in `%LocalAppData%\Katadacho` on Windows and `~/.local/share/Katadacho`
+on Linux: a SQLite database (clipboard history and settings), copied images, and cached app icons.
+
+- **The clipboard history records what you copy.** Password manager copies are skipped, and text that looks
+  like a secret is hidden and erased automatically, but other sensitive text you copy is kept until you
+  delete it.
+- **Notifications can show their content** in the pill. If you share your screen, turn off "Show content"
+  in Settings.
+- **Network calls:** the speed test contacts `speed.cloudflare.com` when you run it. On Linux, when a
+  player publishes its album art as a web address (Spotify does), the cover is downloaded from there.
+  Nothing else leaves your machine.
+
+## Architecture
+
+```text
+React (WebView)  <--- Tauri commands and events --->  Rust (native system APIs)
+```
+
+- A single transparent, undecorated, always-on-top window named `island`. The pill only fills part of it.
+- **Click-through:** the frontend sends Rust the exact rectangle of the pill. On Windows and X11, a Rust
+  thread follows the cursor and only lets the window take the mouse over the pill. Under Wayland
+  layer-shell, the input region is set to the pill directly.
+- **One-off actions** are async `#[tauri::command]` functions that run on worker threads, so the interface
+  never blocks.
+- **Live data** comes through Tauri events (`system-stats`, `clipboard-updated`, `media-changed`,
+  `audio-level`, `timer-update`, `notification-arrived`, `settings-changed`) and a `Channel` for the speed
+  test progress.
+- **No PowerShell:** Windows features use the `windows` crate (Win32, COM and WinRT). Each platform-specific
+  module has a Windows and a Linux implementation behind a shared interface.
+- Collectors only run when needed: telemetry while the Dashboard is open, the audio level while media
+  plays, the timer only during a countdown.
+
+```text
+src/                        React interface
+  island/IslandApp.tsx      Pill, tabs, opening and closing
+  features/                 controls, dashboard, clipboard, launcher, media, timer,
+                            notifications, settings, ai
+  components/               UI building blocks and the mascot
+  hooks/                    Tauri hooks (stats, media, timer, notifications, icons)
+  store/SettingsContext.tsx Shared settings with debounced saving
+  screenshots/              Page that renders the island with mock data (README images)
+
+src-tauri/src/              Rust backend
+  window/                   Positioning, click-through, Wayland layer-shell
+  controls/                 Audio, mixer, brightness, Wi-Fi, Bluetooth
+  telemetry/                CPU, RAM, disk, network, processes, GPU
+  clipboard/                Capture, storage, secrets, paste
+  launcher/                 Index, fuzzy search, icons, global shortcut
+  media/                    Now playing, playback controls, audio level
+  notifications/            Windows toasts and Linux D-Bus notifications
+  mcp/                      MCP server and local bridge for Claude Desktop
+  memory/, timer/, speedtest/, db/, settings.rs, tray.rs
+
+packaging/linux/            Fedora build image, container scripts and smoke tests
+```
+
+## Testing
+
+```bash
+pnpm test
+```
 
 ```bash
 cd src-tauri && cargo test --lib
 ```
 
-Un test, `lists_real_toasts`, est ignoré par défaut : il lit de vraies notifications Windows. Pour le lancer à la main, après avoir reçu une notification :
+Some Rust tests are ignored by default because they need real hardware or apps, for example the mixer test
+that reads the audio sessions of the apps playing right now. Run them by name with `-- --ignored`.
 
-```bash
-cd src-tauri && cargo test --lib lists_real_toasts -- --ignored --nocapture
-```
+The Linux code is tested in the Fedora container: `build-in-container.sh test` runs the Rust tests,
+`wayland-smoke-test.sh` starts the app in a headless Sway session and checks the island is a layer-shell
+surface, and `mixer-smoke-test.sh` drives the mixer against a real PipeWire server.
 
-## Utilisation
+The README images come from `screenshots.html`: run `pnpm dev`, then open
+`http://localhost:1420/screenshots.html?scene=controls` (scenes: `pill`, `controls`, `mixer`, `dashboard`,
+`clipboard`, `launcher`, `timer`, `settings`). The page renders the real interface with fictional data.
 
-- **Ouvrir le menu** : survole la pilule environ 300 ms, ou clique dessus. Le délai se règle dans Réglages.
-- **Fermer le menu** : quitte la pilule, appuie sur `Échap`, ou clique sur la croix.
-- **Lanceur** : `Alt + Espace` depuis n'importe quelle application. Si ce raccourci est déjà pris (menu système, PowerToys Run), `Ctrl + Alt + Espace` est utilisé à la place.
-  - `↑` `↓` pour naviguer, `Entrée` pour lancer, `Ctrl + Entrée` pour lancer en administrateur, `Tab` pour ouvrir l'emplacement.
-- **Barre cachée** : quand l'Island se cache, une fine barre reste en haut de l'écran. La survoler la fait réapparaître.
-- **Notifications** : au premier lancement, autorise l'accès dans Réglages, section Notifications Windows.
+## Known limitations
 
-## Données et vie privée
+- Prebuilt installers are not published yet, and the binaries are not code-signed.
+- On GNOME (Wayland), the island cannot be pinned to the top of the screen.
+- Some features are Windows only for now: the live waveform, idle and fullscreen detection, the Copilot key,
+  quick RAM cleaning and launching as administrator.
+- The launcher indexes apps and a few folders of your profile, not the whole disk.
+- macOS is not supported.
 
-Tout reste sur ta machine, dans `%LocalAppData%\Katadacho` :
+## Contributing
 
-| Élément | Emplacement |
-|---|---|
-| Base SQLite (historique du presse-papier, réglages) | `katadacho.db` |
-| Images copiées et miniatures | `clipboard_images\` |
-| Icônes mises en cache | `icons\` |
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the setup, conventions and pull
+request checklist, and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). To report a vulnerability, see
+[SECURITY.md](SECURITY.md).
 
-Points d'attention :
+## License
 
-- **Le presse-papier enregistre tout ce que tu copies**, y compris un mot de passe copié depuis un gestionnaire. Il n'existe pas encore de filtre pour les exclure.
-- **Les notifications peuvent afficher leur contenu** dans la pilule. Si tu partages ton écran, désactive « Afficher le contenu » dans Réglages.
-- **Le speedtest contacte `speed.cloudflare.com`**, seul appel réseau de l'application.
-
-## Architecture
-
-```text
-React (WebView2)  <--- commandes et événements Tauri --->  Rust (API Windows natives)
-```
-
-- Une seule fenêtre `island`, de 900 par 520 px, transparente, sans décorations et toujours au premier plan. La pilule n'en occupe qu'une partie.
-- **Click-through** : le frontend envoie à Rust le rectangle exact de la pilule à chaque changement de taille. Un thread Rust suit le curseur et ne laisse la fenêtre capter la souris que lorsqu'elle est sur la pilule. Il tourne à environ 60 Hz près de la pilule et 10 Hz ailleurs.
-- **Actions ponctuelles** : commandes `#[tauri::command]` asynchrones, qui travaillent sur des threads dédiés pour ne jamais bloquer l'interface.
-- **Flux en temps réel** : événements Tauri (`system-stats`, `clipboard-updated`, `media-changed`, `audio-level`, `timer-update`, `notification-arrived`, `settings-changed`) et un `Channel` pour la progression du speedtest.
-- **Zéro appel à PowerShell** : tout passe par la crate `windows` (Win32, COM et WinRT).
-- Les collecteurs ne tournent que lorsqu'ils servent : la télémétrie quand le Dashboard est ouvert, le niveau sonore quand un média joue, le minuteur seulement pendant un décompte.
-
-### Structure du projet
-
-```text
-src/                         Interface React
-  island/IslandApp.tsx       Pilule, onglets, ouverture et fermeture
-  features/                  controls, dashboard, clipboard, launcher, media,
-                             timer, notifications, settings
-  components/                Briques d'interface (cartes, curseurs, anneaux)
-  hooks/                     Hooks Tauri (stats, média, minuteur, notifications)
-  store/SettingsContext.tsx  Réglages partagés, sauvegarde différée
-  lib/                       Appels IPC typés, types, presets de mouvement
-
-src-tauri/src/               Backend Rust
-  window/                    Positionnement et click-through
-  controls/                  Audio (IPolicyConfig), luminosité, Wi-Fi, radios
-  telemetry/                 CPU, RAM, disque, réseau, processus, GPU
-  speedtest/                 Latence, téléchargement, envoi
-  clipboard/                 Écoute Win32, lecture, stockage, collage
-  launcher/                  Index, recherche floue, icônes, raccourci global
-  media/                     Média en cours, contrôles, niveau sonore
-  timer/                     Machine à états du Pomodoro et thread de décompte
-  notifications/             Lecture des toasts Windows
-  settings.rs, db/           Réglages et SQLite avec migrations
-```
-
-## Dépendances
-
-### Frontend (npm)
-
-| Paquet | Rôle |
-|---|---|
-| `react`, `react-dom` 19 | Interface |
-| `motion` | Animations à ressort (import `motion/react`, ex-Framer Motion) |
-| `lucide-react` | Icônes |
-| `@tauri-apps/api` 2 | Appels de commandes, événements, canaux |
-| `@fontsource-variable/inter`, `@fontsource-variable/jetbrains-mono` | Polices, embarquées |
-| `zustand`, `react-markdown`, `remark-gfm` | Installés pour les prochaines tâches (Slots, réponses de l'IA). Pas encore utilisés. |
-| `@tauri-apps/plugin-opener`, `plugin-autostart`, `plugin-global-shortcut` | Installés avec les plugins. Les plugins sont utilisés côté Rust, ces paquets JS ne le sont pas encore. |
-
-Outils de développement : `vite` 8, `@vitejs/plugin-react`, `typescript` 6, `tailwindcss` 4 avec `@tailwindcss/vite`, `@tauri-apps/cli` 2, `@types/react` et `@types/react-dom`.
-
-### Backend (crates Rust)
-
-| Crate | Rôle |
-|---|---|
-| `tauri` 2 | Framework de l'application |
-| `tauri-plugin-global-shortcut` | Raccourci global du lanceur |
-| `tauri-plugin-single-instance` | Une seule instance (le rappel est vide pour l'instant) |
-| `tauri-plugin-autostart` | Démarrage avec Windows (initialisé, pas encore configuré) |
-| `tauri-plugin-opener` | Ouverture de liens et fichiers (initialisé) |
-| `windows` 0.62 | API Win32, COM et WinRT, avec les features listées plus bas |
-| `sysinfo` | CPU, RAM, disques, réseau, processus |
-| `nvml-wrapper` | GPU NVIDIA (le repli AMD et Intel passe par DXGI et PDH) |
-| `wmi` | Luminosité des écrans de portable |
-| `rusqlite` (bundled) | SQLite embarqué : historique du presse-papier, réglages |
-| `nucleo-matcher` | Recherche floue du lanceur |
-| `reqwest` (rustls, stream, http2), `futures-util`, `bytes`, `tokio` | Speedtest en flux |
-| `image` (PNG) | Images du presse-papier et icônes |
-| `sha2` | Dédoublonnage du presse-papier et noms du cache d'icônes |
-| `base64` | Envoi des images au frontend |
-| `serde`, `serde_json` | Sérialisation des échanges et des réglages |
-
-Features de la crate `windows`, par usage :
-
-| Usage | Features |
-|---|---|
-| Fenêtre et clic traversant | `Win32_Foundation`, `Win32_UI_WindowsAndMessaging` |
-| Audio | `Win32_Media_Audio`, `Win32_Media_Audio_Endpoints`, `Win32_Devices_FunctionDiscovery`, `Win32_UI_Shell_PropertiesSystem`, `Win32_System_Variant`, `Win32_System_Com_StructuredStorage` |
-| Luminosité | `Win32_Devices_Display`, `Win32_Graphics_Gdi` |
-| Wi-Fi | `Win32_NetworkManagement_WiFi` |
-| Radios et Bluetooth | `Devices_Radios`, `Devices_Bluetooth`, `Devices_Enumeration`, `Foundation`, `Foundation_Collections` |
-| GPU | `Win32_Graphics_Dxgi`, `Win32_System_Performance` |
-| Presse-papier | `Win32_System_DataExchange`, `Win32_System_Memory`, `Win32_System_Ole`, `Win32_UI_Input_KeyboardAndMouse`, `Win32_UI_Accessibility`, `Win32_System_Threading`, `Win32_System_LibraryLoader` |
-| Lanceur et icônes | `Win32_UI_Shell`, `Win32_UI_Shell_Common`, `Win32_System_Com`, `Win32_Storage_FileSystem` |
-| Média | `Media_Control`, `Storage_Streams` |
-| Notifications | `UI_Notifications`, `UI_Notifications_Management`, `ApplicationModel` |
-
-## Conventions de contribution
-
-- Un commit par petit changement, avec un message court en anglais à l'impératif (par exemple « Add timer chip to the idle pill »).
-- Une branche par fonctionnalité, nommée `feature/...`, jamais de travail direct sur `main`.
-- La logique pure est testée (classification du presse-papier, recherche floue, réglages, machine à états du minuteur). Lance `cargo test --lib` et `pnpm build` avant de proposer un changement.
-
-## Limitations connues
-
-- Windows uniquement : le code s'appuie sur les API natives de Windows.
-- Les yeux de la mascotte « Soul » ne suivent pas encore la souris.
-- La recherche du lanceur ne couvre que les applications, le menu Démarrer et quelques dossiers de ton profil, pas tout le disque.
-- La compilation de production (`pnpm tauri build`) n'a pas encore été vérifiée.
-- Aucune licence n'est définie pour l'instant.
+Katadacho is released under the [MIT License](LICENSE). Copyright (c) 2026 Leyy.

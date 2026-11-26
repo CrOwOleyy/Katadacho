@@ -1,6 +1,10 @@
+#[cfg(windows)]
 mod dxgi;
 mod nvml;
+#[cfg(windows)]
 mod pdh;
+#[cfg(target_os = "linux")]
+mod sysfs;
 
 use serde::Serialize;
 
@@ -14,13 +18,25 @@ pub struct GpuStats {
     pub vram_total_mb: f32,
 }
 
-/// Lit les stats du GPU : NVML pour NVIDIA, sinon repli universel DXGI et PDH
-/// qui couvre AMD, Intel et NVIDIA sans bibliothèque propriétaire.
+/// Lit les stats du GPU : NVML pour NVIDIA sur tous les systèmes, sinon le repli du système :
+/// DXGI et PDH sous Windows (toutes marques), les fichiers du pilote `amdgpu` sous Linux.
 pub fn read() -> Option<GpuStats> {
-    nvml::read().or_else(read_windows)
+    nvml::read().or_else(read_platform)
 }
 
-fn read_windows() -> Option<GpuStats> {
+#[cfg(target_os = "linux")]
+fn read_platform() -> Option<GpuStats> {
+    sysfs::read()
+}
+
+/// Pas encore de repli universel hors Windows et Linux : seul NVML est utilisé.
+#[cfg(not(any(windows, target_os = "linux")))]
+fn read_platform() -> Option<GpuStats> {
+    None
+}
+
+#[cfg(windows)]
+fn read_platform() -> Option<GpuStats> {
     let adapter = dxgi::primary_adapter()?;
     let sample = pdh::sample(&adapter.luid)?;
 

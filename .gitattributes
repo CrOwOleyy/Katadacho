@@ -1,0 +1,3 @@
+# Les scripts exécutés sous Linux doivent garder des fins de ligne Unix.
+*.sh text eol=lf
+*.Dockerfile text eol=lf

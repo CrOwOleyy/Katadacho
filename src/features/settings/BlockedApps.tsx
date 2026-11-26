@@ -30,7 +30,7 @@ export function BlockedApps({ apps, onChange }: BlockedAppsProps) {
           onKeyDown={(event) => {
             if (event.key === "Enter") add();
           }}
-          placeholder="Nom d'une application à ignorer (ex. Discord)"
+          placeholder="App to ignore (for example Discord)"
           className="min-w-0 flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs outline-none placeholder:text-white/35 focus:border-[color:var(--accent-color)]"
         />
         <button
@@ -38,7 +38,7 @@ export function BlockedApps({ apps, onChange }: BlockedAppsProps) {
           onClick={add}
           className="rounded-lg bg-[color:var(--accent-color)]/20 px-3 text-xs font-medium hover:bg-[color:var(--accent-color)]/30"
         >
-          Ajouter
+          Add
         </button>
       </div>
       {apps.length > 0 && (
@@ -48,7 +48,7 @@ export function BlockedApps({ apps, onChange }: BlockedAppsProps) {
               {app}
               <button
                 type="button"
-                aria-label={`Ne plus ignorer ${app}`}
+                aria-label={`Stop ignoring ${app}`}
                 onClick={() => onChange(apps.filter((item) => item !== app))}
                 className="rounded-full p-0.5 text-white/50 hover:bg-white/10 hover:text-white"
               >

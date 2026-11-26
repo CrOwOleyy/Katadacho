@@ -20,12 +20,12 @@ export function BluetoothCard({ state, onToggle }: BluetoothCardProps) {
               ? `${first} +${others.length}`
               : first
             : state.bluetoothEnabled === false
-              ? "Désactivé"
-              : "Aucun appareil"}
+              ? "Off"
+              : "No device"}
         </span>
         <Toggle
           checked={state.bluetoothEnabled}
-          label="Activer le Bluetooth"
+          label="Turn Bluetooth on"
           onChange={onToggle}
         />
       </div>

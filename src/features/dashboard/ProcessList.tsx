@@ -31,7 +31,7 @@ export function ProcessList({ processes, onKill }: ProcessListProps) {
             {process.count > 1 && <span className="ml-1 text-white/40">×{process.count}</span>}
           </span>
           <span className="w-12 text-right font-mono text-white/60">{process.cpu.toFixed(1)}%</span>
-          <span className="w-16 text-right font-mono text-white/60">{Math.round(process.memoryMb)} Mo</span>
+          <span className="w-16 text-right font-mono text-white/60">{Math.round(process.memoryMb)} MB</span>
           <button
             type="button"
             onClick={() => void kill(process.pid)}

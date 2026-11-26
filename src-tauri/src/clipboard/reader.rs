@@ -12,16 +12,14 @@ use windows::Win32::System::DataExchange::{
 use windows::Win32::System::Memory::{GlobalLock, GlobalSize, GlobalUnlock};
 use windows::Win32::System::Ole::{CF_DIB, CF_UNICODETEXT};
 
+use super::ingest::ClipboardContent;
+
 const OPEN_ATTEMPTS: u32 = 10;
 const OPEN_RETRY_DELAY: Duration = Duration::from_millis(15);
 const BI_RGB: u32 = 0;
 const BI_BITFIELDS: u32 = 3;
 const BITMAP_INFO_HEADER_MIN: usize = 40;
 
-pub enum ClipboardContent {
-    Text(String),
-    Image(RgbaImage),
-}
 
 /// Ferme le presse-papier à la fin du scope. Un autre programme peut le verrouiller
 /// brièvement, d'où les tentatives répétées à l'ouverture.

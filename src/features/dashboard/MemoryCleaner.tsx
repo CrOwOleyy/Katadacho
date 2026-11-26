@@ -10,15 +10,15 @@ type Running = "quick" | "deep" | null;
 const BYTES_PER_GB = 1_000_000_000;
 
 function formatGb(bytes: number): string {
-  return (bytes / BYTES_PER_GB).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (bytes / BYTES_PER_GB).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function summary(result: CleanResult): string {
-  const detail = result.mode === "quick" ? ` (${result.processesTrimmed} processus)` : "";
+  const detail = result.mode === "quick" ? ` (${result.processesTrimmed} processes)` : "";
   if (result.freedBytes <= 0) {
-    return `Rien de plus à libérer, ${formatGb(result.usedAfterBytes)} Go utilisés${detail}`;
+    return `Nothing more to free, ${formatGb(result.usedAfterBytes)} GB in use${detail}`;
   }
-  return `${formatGb(result.freedBytes)} Go libérés${detail}, ${formatGb(result.usedAfterBytes)} Go utilisés`;
+  return `${formatGb(result.freedBytes)} GB freed${detail}, ${formatGb(result.usedAfterBytes)} GB in use`;
 }
 
 /** Libère de la RAM : rapide sans droits particuliers, ou profond avec les droits administrateur. */
@@ -44,13 +44,13 @@ export function MemoryCleaner() {
   };
 
   return (
-    <BentoCard title="Mémoire" icon={<MemoryStick size={14} />}>
+    <BentoCard title="Memory" icon={<MemoryStick size={14} />}>
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 text-xs text-white/55">
-          {running === "quick" && "Réduction de la mémoire des applications…"}
-          {running === "deep" && "Nettoyage profond en cours, accepte la demande d'autorisation Windows…"}
+          {running === "quick" && "Trimming app memory…"}
+          {running === "deep" && "Deep clean running, accept the permission prompt…"}
           {running === null && result && <span className="text-white/80">{summary(result)}</span>}
-          {running === null && !result && !error && "Rend de la mémoire à Windows sans fermer aucune application."}
+          {running === null && !result && !error && "Gives memory back to the system without closing any app."}
           {running === null && error && <span className="text-red-400">{error}</span>}
         </div>
 
@@ -62,22 +62,22 @@ export function MemoryCleaner() {
             className="flex items-center gap-1.5 rounded-xl bg-[color:var(--accent-color)]/20 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[color:var(--accent-color)]/30 disabled:opacity-40"
           >
             <Sparkles size={13} />
-            Libérer la RAM
+            Free RAM
           </button>
           <button
             type="button"
             disabled={running !== null}
             onClick={() => void run("deep")}
-            title="Vide aussi les caches système. Windows demande l'autorisation administrateur."
+            title="Also empties the system caches. Asks for administrator permission."
             className="flex items-center gap-1.5 rounded-xl bg-white/8 px-3 py-1.5 text-xs font-medium text-white/80 transition-colors hover:bg-white/12 hover:text-white disabled:opacity-40"
           >
             <ShieldCheck size={13} />
-            Nettoyage profond
+            Deep clean
           </button>
         </div>
       </div>
       {result && result.failedSteps.length > 0 && (
-        <p className="text-[10px] text-amber-300/80">Étapes non réalisées : {result.failedSteps.join(", ")}</p>
+        <p className="text-[10px] text-amber-300/80">Steps not completed: {result.failedSteps.join(", ")}</p>
       )}
     </BentoCard>
   );

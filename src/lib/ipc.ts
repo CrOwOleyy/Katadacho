@@ -1,5 +1,5 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
-import type { AudioState, IslandBounds, NetworkBluetoothState } from "./types/controls";
+import type { AppVolume, AudioState, IslandBounds, NetworkBluetoothState } from "./types/controls";
 import type { SpeedtestEvent } from "./types/speedtest";
 import type { ClipboardFilter, ClipboardItem } from "./types/clipboard";
 import type { LauncherResult } from "./types/launcher";
@@ -19,6 +19,9 @@ export const ipc = {
   toggleMute: () => invoke<boolean>("toggle_mute"),
   setDefaultAudioDevice: (deviceId: string) =>
     invoke<void>("set_default_audio_device", { deviceId }),
+  getAppVolumes: () => invoke<AppVolume[]>("get_app_volumes"),
+  setAppVolume: (id: string, level: number) => invoke<void>("set_app_volume", { id, level }),
+  toggleAppMute: (id: string) => invoke<boolean>("toggle_app_mute", { id }),
 
   getBrightness: () => invoke<number>("get_brightness"),
   setBrightness: (level: number) => invoke<void>("set_brightness", { level }),
