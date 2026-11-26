@@ -147,6 +147,8 @@ pub struct MascotSettings {
     pub happy_on_tasks: bool,
     /// Le fantôme se concentre quand une application passe en plein écran.
     pub focus_on_fullscreen: bool,
+    /// Le fantôme prend l'humeur « visionnage » pendant une vidéo ou une série (lecteur, streaming).
+    pub watch_videos: bool,
     /// Le fantôme s'endort la nuit.
     pub sleep_at_night: bool,
     /// Heure de début de la nuit (0 à 23).
@@ -160,6 +162,7 @@ impl Default for MascotSettings {
         Self {
             happy_on_tasks: true,
             focus_on_fullscreen: true,
+            watch_videos: true,
             sleep_at_night: true,
             night_start_hour: 23,
             night_end_hour: 7,

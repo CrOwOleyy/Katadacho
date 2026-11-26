@@ -48,6 +48,26 @@ function Note({ x, y }: { x: number; y: number }) {
   );
 }
 
+/** Seau de pop-corn à droite du fantôme, avec des grains qui sautent de temps en temps. */
+function PopcornBucket({ animated, speed }: { animated: boolean; speed: number }) {
+  const kernels = [
+    { x: 84, y: 98, delay: 0 },
+    { x: 91, y: 95, delay: 0.7 },
+    { x: 88, y: 91, delay: 1.4 },
+  ];
+  return (
+    <g>
+      {kernels.map((kernel) => (
+        <Loop key={kernel.x} animated={animated} speed={speed} duration={2.1} delay={kernel.delay} keyframes={{ y: [0, -4, 0] }}>
+          <circle cx={kernel.x} cy={kernel.y} r={2.6} fill={C.cream} />
+        </Loop>
+      ))}
+      <path d="M81 100 L97 100 L95 117 L83 117 Z" fill={C.band} stroke={C.ink} strokeWidth={1.2} strokeLinejoin="round" />
+      <path d="M86.5 100 L88 117 M91.5 100 L90.5 117" stroke={C.cream} strokeWidth={2} />
+    </g>
+  );
+}
+
 function Headband() {
   return (
     <g fill="none" strokeLinecap="round">
@@ -130,6 +150,8 @@ export function Accessories({ mood, animated, speed }: AccessoriesProps) {
           </Loop>
         </g>
       );
+    case "watching":
+      return <PopcornBucket animated={animated} speed={speed} />;
     case "happy":
       return (
         <g>

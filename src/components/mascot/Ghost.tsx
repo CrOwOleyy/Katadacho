@@ -23,7 +23,7 @@ const FLOAT_PX = { calm: 2, excited: 4, sleepy: 1 };
 const MAX_FLOAT_UNITS = 9;
 
 /** Humeurs où les yeux sont des disques qui peuvent cligner. */
-const BLINKING_MOODS: GhostMood[] = ["idle", "thinking", "music", "focus", "sad"];
+const BLINKING_MOODS: GhostMood[] = ["idle", "thinking", "music", "focus", "sad", "watching"];
 
 type IdleAction = "lookLeft" | "lookRight" | "lookUp" | "hop" | "wiggle";
 const IDLE_ACTIONS: IdleAction[] = ["lookLeft", "lookRight", "lookUp", "hop", "wiggle"];

@@ -97,6 +97,9 @@ function Mouth({ mood }: { mood: GhostMood }) {
       return <path d="M42 50.5 Q50 63 58 50.5 Z" fill={C.ink} strokeLinejoin="round" stroke={C.ink} strokeWidth={1.2} />;
     case "sad":
       return <Stroke d="M44 56.5 Q50 51 56 56.5" />;
+    case "watching":
+      // Bouche ouverte à moitié : le fantôme grignote son pop-corn.
+      return <ellipse cx={50} cy={53} rx={2.6} ry={1.8} fill={C.ink} />;
     default:
       return <Stroke d="M43 51.5 Q50 58 57 51.5" />;
   }

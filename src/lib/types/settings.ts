@@ -42,6 +42,7 @@ export interface HotkeySettings {
 export interface MascotSettings {
   happyOnTasks: boolean;
   focusOnFullscreen: boolean;
+  watchVideos: boolean;
   sleepAtNight: boolean;
   nightStartHour: number;
   nightEndHour: number;

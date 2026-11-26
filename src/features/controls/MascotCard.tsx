@@ -12,6 +12,7 @@ const CAPTION: Record<GhostMood, string> = {
   sleepy: "Taking a break",
   happy: "Well done",
   sad: "Oops",
+  watching: "Watching",
 };
 
 const GHOST_SIZE = 118;
