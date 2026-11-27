@@ -23,6 +23,7 @@ import type { GhostMood } from "../components/mascot/mood";
 import { pickMood } from "../components/mascot/pickMood";
 import { Soul } from "../components/soul/Soul";
 import { MediaPill } from "../features/media/MediaPill";
+import { useCoverAccent } from "../hooks/useCoverAccent";
 import { useMedia } from "../hooks/useMedia";
 import { useClickThroughBounds } from "../hooks/useClickThrough";
 import { useMotionConfig } from "../hooks/useMotion";
@@ -87,8 +88,10 @@ export function IslandApp() {
   const { settings } = useSettings();
   const { spring, fade, tabSeconds } = useMotionConfig();
   const { openDelayMs, closeDelayMs } = settings.animations;
-  const { autoHideSeconds, showMediaInPill } = settings.island;
+  const { autoHideSeconds, showMediaInPill, accentFromCover } = settings.island;
   const media = showMediaInPill ? mediaInfo : null;
+  // Follows the playing track even when the pill hides it.
+  useCoverAccent(mediaInfo, accentFromCover);
   const { snapshot: timer, finished } = useTimer();
   const { current: toast, pending, dismissCurrent } = useNotifications();
   const { question: aiQuestion, answer: answerAiQuestion, error: aiQuestionError } = useAiQuestion();
