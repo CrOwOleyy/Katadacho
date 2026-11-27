@@ -10,7 +10,7 @@ export const FALLBACK: Settings = {
   mascot: { happyOnTasks: true, focusOnFullscreen: true, watchVideos: true, sleepAtNight: true, nightStartHour: 23, nightEndHour: 7 },
   hotkeys: { launcher: "alt+space" },
   animations: { enabled: true, speed: 1, openDelayMs: 300, closeDelayMs: 450, tabTransitionMs: 140 },
-  island: { autoHideSeconds: 15, showMediaInPill: true },
+  island: { autoHideSeconds: 15, showMediaInPill: true, accentFromCover: true },
   timer: {
     focusMinutes: 25,
     shortBreakMinutes: 5,

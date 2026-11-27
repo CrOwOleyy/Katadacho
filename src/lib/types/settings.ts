@@ -9,6 +9,7 @@ export interface AnimationSettings {
 export interface IslandSettings {
   autoHideSeconds: number;
   showMediaInPill: boolean;
+  accentFromCover: boolean;
 }
 
 export interface TimerSettings {

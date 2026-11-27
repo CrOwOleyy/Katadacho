@@ -46,6 +46,8 @@ pub struct IslandSettings {
     /// Secondes avant que l'Island se cache une fois repliée. 0 = ne jamais se cacher.
     pub auto_hide_seconds: u32,
     pub show_media_in_pill: bool,
+    /// Les curseurs, anneaux et boutons prennent la couleur de la pochette du média en cours.
+    pub accent_from_cover: bool,
 }
 
 impl Default for IslandSettings {
@@ -53,6 +55,7 @@ impl Default for IslandSettings {
         Self {
             auto_hide_seconds: 15,
             show_media_in_pill: true,
+            accent_from_cover: true,
         }
     }
 }
