@@ -51,7 +51,8 @@ with six tabs. Transparent areas let clicks through to the windows below, so it 
 ### Controls
 
 Volume and output device, brightness (laptop panels and external monitors over DDC/CI), Wi-Fi and
-Bluetooth, and media playback with album art, seek bar and play, pause, next and previous.
+Bluetooth, and media playback with album art, seek bar and play, pause, next and previous. While a track
+plays, sliders, rings and buttons take the main color of its album art (this can be turned off in Settings).
 
 The **mixer** sets the volume of each app on its own, with the app's real name and icon. Apps that open
 several audio streams (a browser, a voice chat) get a single slider.
