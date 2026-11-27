@@ -28,3 +28,14 @@ body {
   font-family: var(--font-sans);
   color: #f4f4f5;
 }
+
+/* Registered as a color so the accent fades smoothly from one track's cover to the next. */
+@property --accent-color {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #7c9cff;
+}
+
+:root {
+  transition: --accent-color 600ms ease;
+}
