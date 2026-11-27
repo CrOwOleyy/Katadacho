@@ -92,6 +92,13 @@ export function SettingsTab() {
                 onChange={(showMediaInPill) => update((s) => ({ ...s, island: { ...s.island, showMediaInPill } }))}
               />
             </SettingRow>
+            <SettingRow label="Color from album art" description="Sliders and buttons take the cover's main color.">
+              <Toggle
+                label="Take the accent color from album art"
+                checked={island.accentFromCover}
+                onChange={(accentFromCover) => update((s) => ({ ...s, island: { ...s.island, accentFromCover } }))}
+              />
+            </SettingRow>
           </BentoCard>
 
           <ClaudeBridgeSetting />
